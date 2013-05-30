@@ -15,3 +15,11 @@ accelerate the scoring calculation by storing pairwise overhand scores in memory
 
 May later include functionality for gathering sequence homologs to optimize overhang 
 locations.
+
+Files included:
+
+* ggsoft.py - runs the GGSOFT program given an input sequence, overhang size,
+	      minimum fragment length, and maximum fragment length
+* ggsofttest.py - nose testing framework for ggsoft.py
+
+
