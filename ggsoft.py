@@ -24,6 +24,10 @@ import sys
 import re
 from optparse import OptionParser
 
+from Bio import SeqIO
+
+import itertools
+
 # Generator to extract all sequences from FASTA file
 # DOES NOT remove the ">" in the name when processed
 def process(infile):
@@ -36,7 +40,94 @@ def process(infile):
         else:
             seq.append(line.strip())
     if name:
-        yield (name, ''.join(seq))
+        yield (name, ''.join(seq))    
+
+"""
+def process(infile):
+    SeqIO.parse(infile, "fasta")
+"""
+
+def buildtable(size):
+    # for now, size = 2
+    
+    
+    TRANSVERSION = 4
+    TRANSITION = 1
+    IDENTICAL = 0    
+    
+    # 1st base --> 2nd base; 1st base is original
+    score_dict = {'AA':IDENTICAL,
+                  'AT':TRANSVERSION,
+                  'AG':TRANSITION,
+                  'AC':TRANSVERSION,
+                  'TA':TRANSVERSION,
+                  'TT':IDENTICAL,
+                  'TG':TRANSVERSION,
+                  'TC':TRANSITION,
+                  'GA':TRANSITION,
+                  'GT':TRANSVERSION,
+                  'GG':IDENTICAL,
+                  'GC':TRANSVERSION,
+                  'CA':TRANSVERSION,
+                  'CT':TRANSITION,
+                  'CG':TRANSVERSION,
+                  'CC':IDENTICAL}
+    
+    """
+    # build one-base scoring table
+    score_table = {}    
+    for i in bases:
+        score_table[i] = {}
+        for j in bases:
+            pair = i + j
+            # transversion, score = 4
+            if pair in transversion_list:
+                score_table[i][j] = TRANSVERSION
+            # transition, score = 1
+            elif pair in transition_list:
+                score_table[i][j] = TRANSITION
+            # identical, score = 0
+            elif pair in identical_list:
+                score_table[i][j] = IDENTICAL
+            else:
+                raise IOError("Invalid input sequence!")
+    """
+    
+    # build size n-base scoring table ----------------------------------------
+    bases = ['A','T','G','C']    
+    
+    overhangs = []
+    
+    # find all possible sequences of length "size"
+    # size 4 corresponds to "NNNN" = "AAAA","AAAT","AAAG",...,"CCCC"
+    for seqlst in list(itertools.product(bases, repeat=size)):
+        final = ''
+        # seqlst looks like ['A','A','A','T'] so we want to convert the list
+        # into a string like 'AAAT'
+        for letter in seqlst:
+            final += letter
+        overhangs.append(final)
+        
+    # construct the table
+    # first overhang sequence
+    size_score_table = {}
+    for first in overhangs:
+        # second overhang sequence to be compared with
+        subtable = {}
+        for second in overhangs:
+            # sum the scores from pairwise comparisons of bases
+            # use one-base scoring table to calculate sequence scores
+            pairscore = 0
+            # go base by base down the overhangs, which should be the same size
+            for index in range(size):
+                pairstring = first[index] + second[index]
+                pairscore += score_dict[pairstring]
+            subtable[second] = pairscore
+        size_score_table[first] = subtable
+
+    #print size_score_table
+
+    return size_score_table
 
 """
 # Finds fragments of specified size
@@ -71,6 +162,8 @@ def ggsize(seq, minsize, maxsize):
 
 """ Major issue: need to find sequences inbetween without going off the edges
     or hitting index 0 mod fragnum
+    
+    Re-write this method to use a window size
 """
 def ggnum(seq, fragnum):
     
@@ -122,6 +215,7 @@ def ggnum(seq, fragnum):
 
 def main():
 
+    # read command-line arguments --------------------------------------------
     parser = OptionParser()
     parser.add_option("-i", "--in", dest="infile", help="input sequence FASTA file")
     parser.add_option("-o", "--out", dest="outfile", help="name of output FASTA file")
@@ -142,7 +236,7 @@ def main():
     template = open(infile)
     newfile = open(outfile, 'w')
 
-    # extract the sequence from the FASTA file
+    # extract the sequence from the FASTA file -------------------------------
     seqlist = []
     for name, seq in process(template):
         print "name, seq: " + name + ", " + seq
@@ -151,14 +245,18 @@ def main():
         seqlist.append(item)
 
     print seqlist
+    
+    template.close()
 
-    # Ensure FASTA file has only 1 sequence
+    # Ensure FASTA file has only 1 sequence ----------------------------------
     if len(seqlist) > 1:
         raise IOError("Too many sequences! Only one sequence per file allowed!")
     elif len(seqlist) < 1:
         raise IOError("Not enough sequences! Only one sequence per file allowed!")
 
-    # Find the fragments of specified size in the sequence
+    # build the scoring table using the given fragment size
+
+    # Find the fragments of specified size in the sequence -------------------
     info = seqlist[0][0]
     seq = seqlist[0][1]
     print "info: " + info
@@ -166,7 +264,7 @@ def main():
     #fraglist = goldengate(seq, minsize, maxsize)
     fraglist = ggnum(seq, fragcount)
     
-    # Print the fragment results
+    # Print the fragment results ---------------------------------------------
     print info + "\n"
     for frag in fraglist:
         print str(frag) + "\n"
