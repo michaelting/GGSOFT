@@ -78,7 +78,8 @@ def buildtable(size):
         This method is very slow: O(4^n). As we increase the overhang length to
         be greater than 4, the computation becomes extremely slow - 49s for
         a size 6 overhang. We may want to look into rewriting the code to
-        speed up this computation.
+        speed up this computation, since the matrix is a mirror-image along
+        the diagonal.
 
     input size 1 overhang:
     |N
@@ -173,7 +174,8 @@ def getsubstrings(seq, size):
     """
     
     subdict = {}
-    
+    # slide a window of length "size" across the sequence and record the 
+    # substring along with its corresponding initial index
     for pos in range(len(seq)):
         
         start = pos
@@ -182,26 +184,30 @@ def getsubstrings(seq, size):
         substr = seq[start:end]        
         subdict[pos] = substr
         
-        # end of substring window has reached end of sequence
+        # end of substring sliding window has reached end of sequence
         if end == len(seq):
             break
-        
+
     return subdict
 
 # find all valid overhang combinations ---------------------------------------
-def find_combos(subdict, minsize, maxsize):
+def find_combos(seq, OHsize, minsize, maxsize):
     """
     Use sequence indices to pull overhang substrings from substrs and produce
     a list of lists of valid overhang combinations
 
     Input:
-        subdict - dictionary containing sequence index --> substring pairs
-        minsize - the minimum size of a final fragment
-        maxsize - the maximum size of a final fragment
+        seq     - nucleotide sequence of the input
+        OHsize  - length of the overhang in bp
+        minsize - minimum size of a DNA fragment
+        maxsize - maximum size of a DNA fragment
     Output:
         A list of lists of indices corresponding to valid overhang combinations
     
     """
+
+    # associate indices with overhang-sized fragments
+    subdict = getsubstrings(seq, OHsize)
 
     # start from a reference index, go from minsize to maxsize
 
@@ -213,6 +219,7 @@ def calc_score(OHlist, scoretable):
     """
     Given an overhang list, ['AAAA','GATC','GGAT'], score the list by summing
     all pairwise scores, so:
+    
     SUM:
         score('AAAA','GATC') = TS+ID+TV+TV = 1+0+4+4 = 9
         score('AAAA','GGAT') = TS+TS+ID+TV = 1+1+0+4 = 6
@@ -243,6 +250,7 @@ def calc_score(OHlist, scoretable):
         startsecond = first+1
         seq1 = OHlist[first]
         
+        # upper half of matrix only
         for second in range(startsecond,len(OHlist)):
             
             seq2 = OHlist[second]

@@ -18,9 +18,9 @@ def test_parsefasta():
 """
 
 # checks that scoring table is built correctly
-def test_scoretable1():
+def test_scoretable_size1():
     """
-    test_scoretable1    
+    test_scoretable_size1    
     
     input size 1 overhang:
     |N
@@ -57,9 +57,9 @@ def test_scoretable1():
     eq_(size1table['C']['G'], TV, msg="C-G table 1 test failed!")
     eq_(size1table['C']['C'], ID, msg="C-C table 1 test failed!")
 
-def test_scoretable2():
+def test_scoretable_size2():
     """
-    test_scoretable2
+    test_scoretable_size2
     
     input size 2 overhang:
     |NN
@@ -99,9 +99,9 @@ def test_scoretable2():
     eq_(size2table['AA']['TA'], TV+ID, msg="AA-TA table 2 test failed!")
     eq_(size2table['AA']['GA'], TS+ID, msg="AA-GA table 2 test failed!")
 
-def test_scoretable4():
+def test_scoretable_size4():
     """
-    test_scoretable4
+    test_scoretable_size4
     
     input size 4 overhang:
     |NNNN
@@ -157,14 +157,15 @@ def test_seqsubstr1():
     
     newdict = ggsoft.getsubstrings(seq, size)
     
-    eq_(newdict[0], testdict[0], msg="Overhang equality at index 0 failed!")
-    eq_(newdict[1], testdict[1], msg="Overhang equality at index 1 failed!")
-    eq_(newdict[2], testdict[2], msg="Overhang equality at index 2 failed!")
-    eq_(newdict[3], testdict[3], msg="Overhang equality at index 3 failed!")
+    for i in range(len(seq)-size+1):
+        eq_(newdict[i], testdict[i], msg="Overhang equality at index %d failed!" % i)
     
 def test_seqsubstr2():
     """
     test_seqsubstr2
+    
+    Checks that the substrings are correctly parsed from an input sequence
+    given a specified overhang size.
     
     """
     
@@ -243,11 +244,24 @@ def test_scorecalc2():
     # TTTTTT-ACACAC: TS*3+TV*3 = 3+12 = 15
     # TTTTTT-TCTAGT: ID*3+TS*1+TV*2 = 0+1+8 = 9
     # ACACAC-TCTAGT: TV+ID+TV+TV+TS+TS = 0+2+12 = 14
-    # Sum = 100
+    # total score = 91
     OHlist2 = ['AAAAAA','TTTTTT','ACACAC','TCTAGT']
     testscore2 = 91
     newscore2 = ggsoft.calc_score(OHlist2,size6table)
     
     eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")
+    
+def test_combofinder1():
+    """
+    test_combofinder1
+    
+    Checks that all valid combinations are found correctly
+    """
+    
+    # fragment size between 4-8bp    
+    seq = "aaaaTTTTaaaa"
+    """    
+    TTTT
+    """
     
     
