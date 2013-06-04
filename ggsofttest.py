@@ -20,6 +20,27 @@ def test_parsefasta():
     Ensures that the FASTA file is being read correctly
     """   
     eq_(True, False, msg="FASTA file parsed incorrectly!")
+    
+def test_parsefasta2():
+    """
+    test_parsefasta2
+    
+    Ensures that the FASTA file is being read correctly using the Biopython
+    package SeqIO.
+    """
+    testfile1 = open("test.fasta", "r")
+    seq1 = ggsoft.process2(testfile1)
+    
+    eq_(seq1, "AAAATTTT", msg="fasta parser 2 test 1 reading incorrectly!")
+    
+    testfile2 = open("test2.fasta", "r")
+    seq2 = ggsoft.process2(testfile2)
+    
+    print seq2    
+    
+    eq_(seq2,
+        "AAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCC",
+        msg="fasta parser 2 test 2 reading incorrectly!")
 
 
 # checks that scoring table is built correctly
@@ -67,8 +88,8 @@ def test_scoretable_size2():
     test_scoretable_size2
     
     input size 2 overhang:
-    |NN
-     NN|
+    |NN     |NN
+     xx|     xx|
     should produce 16*16 = size 256 table
         AA  AT  AG  AC  TA  TT  TG  TC  GA  GT  GG  GC  CA  CT  CG  CC
     AA  0   4   1   4   4   8   5   8   1   5   2   5   4   8   5   8 
@@ -265,8 +286,15 @@ def test_combofinder1():
     
     # fragment size between 4-8bp    
     seq = "aaaaTTTTaaaa"
+    OHsize = 4
+    minsize = 4
+    maxsize = 8
     """    
     TTTT
     """
+    combolist1 = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
+    testlist1 = ['TTTT']    
+    
+    eq_(combolist1, testlist1, msg="combofinder 1 failed!")
     
     

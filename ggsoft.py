@@ -55,10 +55,16 @@ def process(infile):
     if name:
         yield (name, ''.join(seq))    
 
-
+# Uses the Biopython package SeqIO to extract information from a FASTA file
 def process2(infile):
-
-    record = SeqIO.read(infile, "fasta")
+    """
+    Extracts sequences from a FASTA file using the Biopython package
+    SeqIO.
+    """
+    try:
+        record = SeqIO.read(infile, "fasta")
+    except ValueError:
+        raise ValueError("Invalid file format! Please use a FASTA file with one sequence.")
     
     return str(record.seq)
 
@@ -372,6 +378,8 @@ def main():
     newfile = open(outfile, 'w')
 
     # extract the sequence from the FASTA file -------------------------------
+    # using the process() generator
+    """
     seqlist = []
     for name, seq in process(template):
         print "name, seq: " + name + ", " + seq
@@ -389,23 +397,32 @@ def main():
     elif len(seqlist) < 1:
         raise IOError("Not enough sequences! Only one sequence per file allowed!")
 
+    """
+    
+    seq = process2(template)    
+    
+    template.close()
+
+
     # build the scoring table using the given fragment size
     score_table = buildtable(OHsize)
 
     # Find the fragments of specified size in the sequence -------------------
+    """
     info = seqlist[0][0]
     seq = seqlist[0][1]
     print "info: " + info
     print "seq: " + seq
+    """
     #fraglist = goldengate(seq, minsize, maxsize)
     fraglist = ggnum(seq, fragcount)
     
     # Print the fragment results ---------------------------------------------
-    print info + "\n"
+    #print info + "\n"
     for frag in fraglist:
         print str(frag) + "\n"
 
-    # need to write to new file!
+    # need to write to new file! ---------------------------------------------
     #for frag in fraglist:
 
 if __name__ == "__main__":
