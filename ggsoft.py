@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
 #==============================================================================
 # ggsoft.py
@@ -20,8 +20,6 @@
 #
 #==============================================================================
 
-import sys
-import re
 from optparse import OptionParser
 
 from Bio import SeqIO
@@ -57,10 +55,12 @@ def process(infile):
     if name:
         yield (name, ''.join(seq))    
 
-"""
-def process(infile):
-    SeqIO.parse(infile, "fasta")
-"""
+
+def process2(infile):
+
+    record = SeqIO.read(infile, "fasta")
+    
+    return str(record.seq)
 
 # Construct the scoring table ------------------------------------------------
 def buildtable(size):

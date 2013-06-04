@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/python
 
 #==============================================================================
 #
@@ -12,17 +12,22 @@ import ggsoft
 from nose.tools import ok_, eq_
 
 # checks that sequence parser functions correctly
-"""
+
 def test_parsefasta():
-    pass
-"""
+    """
+    test_parsefasta
+    
+    Ensures that the FASTA file is being read correctly
+    """   
+    eq_(True, False, msg="FASTA file parsed incorrectly!")
+
 
 # checks that scoring table is built correctly
 def test_scoretable_size1():
     """
     test_scoretable_size1    
     
-    input size 1 overhang:
+    Input size 1 overhang:
     |N
      N|
     should produce 4*4 = size 16 table
