@@ -21,29 +21,15 @@
 #==============================================================================
 
 from optparse import OptionParser
-
 from Bio import SeqIO
 
+import math
 import itertools
 
 # Generator to extract all sequences from FASTA file
 # DOES NOT remove the ">" in the name when processed
+"""
 def process(infile):
-    """
-    Extracts sequences from a FASTA file.
-    
-    Input:
-        infile  - A FASTA file with a nucleotide sequence
-    Output:
-        A generator to yield all nucleotide sequences in the file
-        
-    Note:
-        - For the purposes of this program, we want to restrict the number of
-          sequences in the input file to ONE (1) sequence. 
-        - In the future, we may want to incorporate homology as information to
-          find the best locations across a family of gene sequences. This may
-          require parsing a FASTA file with multiple sequences.
-    """
     name, seq = None, []
     for line in infile:
         if line.startswith(">"):
@@ -53,13 +39,25 @@ def process(infile):
         else:
             seq.append(line.strip())
     if name:
-        yield (name, ''.join(seq))    
+        yield (name, ''.join(seq))
+"""
 
 # Uses the Biopython package SeqIO to extract information from a FASTA file
-def process2(infile):
+def process(infile):
     """
     Extracts sequences from a FASTA file using the Biopython package
     SeqIO.
+    
+    Input:
+        infile  - A FASTA file with a single nucleotide sequence.
+    Output:
+        A string corresponding to the nucleotide sequence in the file.
+    Note:
+        - For the purposes of this program, we want to restrict the number of
+          sequences in the input file to ONE (1) sequence. 
+        - In the future, we may want to incorporate homology as information to
+          find the best locations across a family of gene sequences. This may
+          require parsing a FASTA file with multiple sequences.
     """
     try:
         record = SeqIO.read(infile, "fasta")
@@ -209,16 +207,29 @@ def find_combos(seq, OHsize, minsize, maxsize):
         maxsize - maximum size of a DNA fragment
     Output:
         A list of lists of indices corresponding to valid overhang combinations
-    
+        with their score
     """
 
     # associate indices with overhang-sized fragments
     subdict = getsubstrings(seq, OHsize)
 
+    # divide into regions
+
     # start from a reference index, go from minsize to maxsize
 
     for index in range(len(subdict.keys())):
         print "hello"
+
+# Checks that regions are within a valid distance from each other
+# Alternatively, checks that fragment sizes are within user specifications
+def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
+    dist = math.fabs(OHindex2-OHindex1)
+    
+    if dist in range(mindist, maxdist):
+        return True
+    else:
+        return False
+    
 
 # Find the total score of one overhang combination ---------------------------
 def calc_score(OHlist, scoretable):
@@ -399,7 +410,7 @@ def main():
 
     """
     
-    seq = process2(template)    
+    seq = process(template)    
     
     template.close()
 

@@ -9,39 +9,62 @@
 #==============================================================================
 
 import ggsoft
-from nose.tools import ok_, eq_
+from nose.tools import ok_, eq_, raises
 
 # checks that sequence parser functions correctly
 
+"""
+def test_parsefasta():
+
+    eq_(True, False, msg="FASTA file parsed incorrectly!")
+"""
+    
 def test_parsefasta():
     """
     test_parsefasta
-    
-    Ensures that the FASTA file is being read correctly
-    """   
-    eq_(True, False, msg="FASTA file parsed incorrectly!")
-    
-def test_parsefasta2():
-    """
-    test_parsefasta2
     
     Ensures that the FASTA file is being read correctly using the Biopython
     package SeqIO.
     """
     testfile1 = open("test.fasta", "r")
-    seq1 = ggsoft.process2(testfile1)
+    seq1 = ggsoft.process(testfile1)
     
     eq_(seq1, "AAAATTTT", msg="fasta parser 2 test 1 reading incorrectly!")
-    
-    testfile2 = open("test2.fasta", "r")
-    seq2 = ggsoft.process2(testfile2)
-    
-    print seq2    
-    
-    eq_(seq2,
-        "AAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCCAAAAACCCCC",
-        msg="fasta parser 2 test 2 reading incorrectly!")
+    testfile1.close()
 
+@raises(ValueError)        
+def test_parsefail1():
+    """
+    test_parsefail1
+    
+    Ensures that exception is correctly thrown for multiple FASTA sequences
+    in the same file.
+    """
+    testfile1 = open("test2.fasta", "r")
+    seq1 = ggsoft.process(testfile1)
+    testfile1.close()
+
+@raises(ValueError)
+def test_parsefail2():
+    """
+    test_parsefail2
+    
+    Ensures that exception is correctly thrown for incorrectly formatted
+    FASTA file
+    """
+    testfile2 = open("parsetestfail.fasta", "r")
+    seq2 = ggsoft.process(testfile2)
+    testfile2.close()
+    
+def test_parsefail3():
+    """
+    test_parsefail3
+    
+    Should correctly parse the file
+    """
+    testfile3 = open("test.fasta", "r")
+    seq3 = ggsoft.process(testfile3)
+    testfile3.close()
 
 # checks that scoring table is built correctly
 def test_scoretable_size1():
@@ -214,10 +237,50 @@ def test_seqsubstr2():
     
     for i in range(len(seq)-size+1):
         eq_(newdict[i], testdict[i], msg="Overhang equality at index %d failed!" % i)
-        
-def test_scorecalc():
+
+def test_validdist1():
     """
-    test_scorecalc
+    test_validdist1
+    
+    Checks that boolean function _valid_distance returns correct values for
+    given indices.
+    """
+    
+    OHindexL1 = 4
+    OHindexU1 = 8
+    mindist1 = 3
+    maxdist1 = 9
+    
+    valid1 = ggsoft._valid_distance(OHindexL1, OHindexU1, mindist1, maxdist1)
+    ok_(valid1, msg="valid distance test 1 failed!")
+    
+    OHindexL2 = 4
+    OHindexU2 = 8
+    mindist2 = 5
+    maxdist2 = 7
+    
+    valid2 = ggsoft._valid_distance(OHindexL2, OHindexU2, mindist2, maxdist2)
+    ok_(not valid2, msg="valid distance test 2 failed!")
+    
+    OHindexL3 = 4
+    OHindexU3 = 7
+    mindist3 = 4
+    maxdist3 = 8
+    
+    valid3 = ggsoft._valid_distance(OHindexL3, OHindexU3, mindist3, maxdist3)
+    ok_(not valid3, msg="valid distance test 3 failed!")
+    
+    OHindexL4 = 5
+    OHindexU4 = 8
+    mindist4 = 4
+    maxdist4 = 8
+    
+    valid4 = ggsoft._valid_distance(OHindexL4, OHindexU4, mindist4, maxdist4)
+    ok_(not valid4, msg="valid distance test 4 failed!")
+
+def test_scorecalc1():
+    """
+    test_scorecalc1
     
     Checks that scores for an overhang list are calculated correctly
     
