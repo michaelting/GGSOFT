@@ -31,6 +31,21 @@ import itertools
 # Generator to extract all sequences from FASTA file
 # DOES NOT remove the ">" in the name when processed
 def process(infile):
+    """
+    Extracts sequences from a FASTA file.
+    
+    Input:
+        infile  - A FASTA file with a nucleotide sequence
+    Output:
+        A generator to yield all nucleotide sequences in the file
+        
+    Note:
+        - For the purposes of this program, we want to restrict the number of
+          sequences in the input file to ONE (1) sequence. 
+        - In the future, we may want to incorporate homology as information to
+          find the best locations across a family of gene sequences. This may
+          require parsing a FASTA file with multiple sequences.
+    """
     name, seq = None, []
     for line in infile:
         if line.startswith(">"):
@@ -47,69 +62,80 @@ def process(infile):
     SeqIO.parse(infile, "fasta")
 """
 
+# Construct the scoring table ------------------------------------------------
 def buildtable(size):
-    # for now, size = 2
+    """
+    Constructs the scoring table of size x size using single-base scores in
+    score_dict. Utilizes the itertools.product module to calculate all possible
+    nucleotide sequences NNN... of length "size".
     
+    Input:
+        size    - The length of the overhang in bp
+    Output:
+        size_score_table    - A matrix of pairwise scores for overhangs of
+                              length "size".
+    Notes:
+        This method is very slow: O(4^n). As we increase the overhang length to
+        be greater than 4, the computation becomes extremely slow - 49s for
+        a size 6 overhang. We may want to look into rewriting the code to
+        speed up this computation.
+
+    input size 1 overhang:
+    |N
+     N|
+    should produce 4*4 = size 16 table
+        A   T   G   C
+    A   0   4   1   4
+    T   4   0   4   1
+    G   1   4   0   4
+    C   4   1   4   0    
     
-    TRANSVERSION = 4
-    TRANSITION = 1
-    IDENTICAL = 0    
+    """
     
+    TV = 4  # transversion
+    TS = 1  # transition
+    ID = 0  # identical
+    
+    # pairwise scores for bases in the same position
     # 1st base --> 2nd base; 1st base is original
-    score_dict = {'AA':IDENTICAL,
-                  'AT':TRANSVERSION,
-                  'AG':TRANSITION,
-                  'AC':TRANSVERSION,
-                  'TA':TRANSVERSION,
-                  'TT':IDENTICAL,
-                  'TG':TRANSVERSION,
-                  'TC':TRANSITION,
-                  'GA':TRANSITION,
-                  'GT':TRANSVERSION,
-                  'GG':IDENTICAL,
-                  'GC':TRANSVERSION,
-                  'CA':TRANSVERSION,
-                  'CT':TRANSITION,
-                  'CG':TRANSVERSION,
-                  'CC':IDENTICAL}
-    
-    """
-    # build one-base scoring table
-    score_table = {}    
-    for i in bases:
-        score_table[i] = {}
-        for j in bases:
-            pair = i + j
-            # transversion, score = 4
-            if pair in transversion_list:
-                score_table[i][j] = TRANSVERSION
-            # transition, score = 1
-            elif pair in transition_list:
-                score_table[i][j] = TRANSITION
-            # identical, score = 0
-            elif pair in identical_list:
-                score_table[i][j] = IDENTICAL
-            else:
-                raise IOError("Invalid input sequence!")
-    """
+    score_dict = {'AA':ID,
+                  'AT':TV,
+                  'AG':TS,
+                  'AC':TV,
+                  'TA':TV,
+                  'TT':ID,
+                  'TG':TV,
+                  'TC':TS,
+                  'GA':TS,
+                  'GT':TV,
+                  'GG':ID,
+                  'GC':TV,
+                  'CA':TV,
+                  'CT':TS,
+                  'CG':TV,
+                  'CC':ID}
     
     # build size n-base scoring table ----------------------------------------
     bases = ['A','T','G','C']    
     
-    overhangs = []
-    
     # find all possible sequences of length "size"
     # size 4 corresponds to "NNNN" = "AAAA","AAAT","AAAG",...,"CCCC"
+    overhangs = []
     for seqlst in list(itertools.product(bases, repeat=size)):
         final = ''
-        # seqlst looks like ['A','A','A','T'] so we want to convert the list
-        # into a string like 'AAAT'
+        # using itertools.product, seqlst looks like 
+        # [['A','A','A','A',],['A','A','A','T'],['A','A','A','G'],...] 
+        # so we want to convert each sublist into a string like
+        # ['AAAA','AAAT','AAAG',...]
         for letter in seqlst:
             final += letter
         overhangs.append(final)
         
-    # construct the table
-    # first overhang sequence
+    # construct the overhang table--------------------------------------------
+    # --> could optimize this to reduce the number of computations by half by
+    # copying the table over in a mirror-image        
+        
+    # first overhang sequence for comparison
     size_score_table = {}
     for first in overhangs:
         # second overhang sequence to be compared with
@@ -125,9 +151,106 @@ def buildtable(size):
             subtable[second] = pairscore
         size_score_table[first] = subtable
 
-    #print size_score_table
-
     return size_score_table
+
+# Compute all overhang-sized substrings of an input sequence -----------------
+def getsubstrings(seq, size):
+    """
+    Computes all overhang-sized substrings of an input sequence.
+    
+    Input:
+        seq     - The input nucleotide sequence for which we want to find
+                  overhangs to use for DNA assembly
+        size    - The length in bp of the overhang
+    Output:
+        A dictionary mapping sequence index --> overhang substring
+        
+    seq = "ATGCGTA" with overhang size 4 would yield:
+    dict = {0:'ATGC',
+            1:'TGCG',
+            2:'GCGT',
+            3:'CGTA'}
+    """
+    
+    subdict = {}
+    
+    for pos in range(len(seq)):
+        
+        start = pos
+        end = pos+size
+        
+        substr = seq[start:end]        
+        subdict[pos] = substr
+        
+        # end of substring window has reached end of sequence
+        if end == len(seq):
+            break
+        
+    return subdict
+
+# find all valid overhang combinations ---------------------------------------
+def find_combos(subdict, minsize, maxsize):
+    """
+    Use sequence indices to pull overhang substrings from substrs and produce
+    a list of lists of valid overhang combinations
+
+    Input:
+        subdict - dictionary containing sequence index --> substring pairs
+        minsize - the minimum size of a final fragment
+        maxsize - the maximum size of a final fragment
+    Output:
+        A list of lists of indices corresponding to valid overhang combinations
+    
+    """
+
+    # start from a reference index, go from minsize to maxsize
+
+    for index in range(len(subdict.keys())):
+        print "hello"
+
+# Find the total score of one overhang combination ---------------------------
+def calc_score(OHlist, scoretable):
+    """
+    Given an overhang list, ['AAAA','GATC','GGAT'], score the list by summing
+    all pairwise scores, so:
+    SUM:
+        score('AAAA','GATC') = TS+ID+TV+TV = 1+0+4+4 = 9
+        score('AAAA','GGAT') = TS+TS+ID+TV = 1+1+0+4 = 6
+        score('GATC','GGAT') = ID+TS+TV+TS = 0+1+4+1 = 6
+    = 9+6+9 = 21
+    
+    For 3 overhangs, we need 2+1 = 3 scores to sum
+    For 4 overhangs, we need 3+2+1 = 6 scores to sum
+    For 5 overhangs, we need 4+3+2+1 = 10 scores to sum
+    For n overhangs, we need 1+2+3+...+n-1 = n*(n-1)/2 = 1/2*(n^2-n) scores
+
+    Input:
+        OHlist      - list of overhangs, ['AAAA','GATC','GGAT']
+        scoretable  - double dictionary table, which can be accessed
+                      using scoretable['firstseq']['secondseq']
+    Output:
+        The sum total score of all pairwise comparisons between overhangs in
+        the input list. The lists will later be sorted by score, from which
+        we can access the top x percent, e.g. top 10%    
+    """
+    
+    # Only need to do the upper triangle half of the matrix, otherwise we will
+    # be overcalculating the score
+    totalscore = 0
+    
+    for first in range(len(OHlist)):
+        
+        startsecond = first+1
+        seq1 = OHlist[first]
+        
+        for second in range(startsecond,len(OHlist)):
+            
+            seq2 = OHlist[second]
+            score = scoretable[seq1][seq2]
+            
+            totalscore += score
+    
+    return totalscore 
 
 """
 # Finds fragments of specified size
@@ -158,7 +281,7 @@ def ggsize(seq, minsize, maxsize):
             linkers[link] = i
 """
 
-# Finds a specific number of fragments
+# Finds a specific number of fragments ---------------------------------------
 
 """ Major issue: need to find sequences inbetween without going off the edges
     or hitting index 0 mod fragnum
@@ -170,6 +293,7 @@ def ggnum(seq, fragnum):
     length = len(seq)
     stepsize = length / int(fragnum)
     steps = length % int(fragnum)
+    # total number of fragments = # overhangs - 1
     totalfrags = int(fragnum)-1 # uses range from 0,...,fragnum
 
     linkdict = dict()
@@ -213,6 +337,7 @@ def ggnum(seq, fragnum):
 
     return fraglist
 
+# executes when program run from command line --------------------------------
 def main():
 
     # read command-line arguments --------------------------------------------
@@ -222,6 +347,7 @@ def main():
     parser.add_option("-m", "--min", dest="minsize", help="minimum fragment size")
     parser.add_option("-n", "--max", dest="maxsize", help="maximum fragment size")
     parser.add_option("-c", "--count", dest="fragcount", help="number of fragments to produce")
+    parser.add_option("-s", "--size", dest="OHsize", help="overhang size in bp")
 
     """also need an option for enzyme type to overhang bp size"""
 
@@ -232,6 +358,7 @@ def main():
     minsize = options.minsize
     maxsize = options.maxsize
     fragcount = options.fragcount
+    OHsize = options.OHsize
 
     template = open(infile)
     newfile = open(outfile, 'w')
@@ -255,6 +382,7 @@ def main():
         raise IOError("Not enough sequences! Only one sequence per file allowed!")
 
     # build the scoring table using the given fragment size
+    score_table = buildtable(OHsize)
 
     # Find the fragments of specified size in the sequence -------------------
     info = seqlist[0][0]

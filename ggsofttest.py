@@ -34,9 +34,9 @@ def test_scoretable1():
     
     """
     
-    TV = 4
-    TS = 1
-    ID = 0      
+    TV = 4  # transversion
+    TS = 1  # transition
+    ID = 0  # identical
     
     size1table = ggsoft.buildtable(1)
     
@@ -67,26 +67,26 @@ def test_scoretable2():
     should produce 16*16 = size 256 table
         AA  AT  AG  AC  TA  TT  TG  TC  GA  GT  GG  GC  CA  CT  CG  CC
     AA  0   4   1   4   4   8   5   8   1   5   2   5   4   8   5   8 
-    AT      0
-    AG          0
-    AC              0
-    TA                  0
-    TT                      0
-    TG                          0
-    TC                              0
-    GA                                  0
-    GT                                      0
-    GG                                          0
-    GC                                              0
-    CA                                                  0
-    CT                                                      0
-    CG                                                          0
-    CC                                                              0
+    AT  4   0   4   1   8   4   8   5   5   1   5   2   8   4   8   5
+    AG  1   4   0   4   5   8   4   8   2   5   1   5   5   8   4   8
+    AC  4   1   4   0   8   5   8   4   5   2   5   1   8   5   8   4
+    TA  4   8   5   8   0   4   1   4   4   8   5   8   1   5   2   5
+    TT  8   4   8   5   4   0   4   1   8   4   8   5   5   1   5   2   
+    TG  5   8   4   8   1   4   0   4   5   8   4   8   2   5   1   5
+    TC  8   5   8   4   4   1   4   0   8   5   8   4   5   2   5   1
+    GA  1   5   2   5   4   8   5   8   0   4   1   4   4   8   5   8
+    GT  5   1   5   2   8   4   8   5   4   0   4   1   8   4   8   5
+    GG  2   5   1   5   5   8   4   8   1   4   0   4   5   8   4   8
+    GC  5   2   5   1   8   5   8   4   4   1   4   0   8   5   8   4
+    CA  4   8   5   8   1   5   2   5   4   8   5   8   0   4   1   4
+    CT  8   4   8   5   5   1   5   2   8   4   8   5   4   0   4   1
+    CG  5   8   4   8   2   5   1   5   5   8   4   8   1   4   0   4
+    CC  8   5   8   4   5   2   5   1   8   5   8   4   4   1   4   0
     """
     
-    TV = 4
-    TS = 1
-    ID = 0
+    TV = 4  # transversion
+    TS = 1  # transition
+    ID = 0  # identical
     
     size2table = ggsoft.buildtable(2)
     
@@ -107,18 +107,147 @@ def test_scoretable4():
     |NNNN
      NNNN|
     should produce 256*256 = size 65536 table
-        AAAA
-    AAAA
+            AAAA    AAAT    AAAG    AAAC    ...
+    AAAA    0       4       1       4      
+    AAAT    4       0       4       1
+    AAAG    1       4       0       4
+    AAAC    4       1       4       0
+    ...
     """
     
-    TV = 4
-    TS = 1
-    ID = 0
+    TV = 4  # transversion
+    TS = 1  # transition
+    ID = 0  # identical
     
     size4table = ggsoft.buildtable(4)
     
     eq_(size4table['AAAA']['AAAA'], ID+ID+ID+ID, msg="AAAA-AAAA table 4 test failed!")
-    eq_(size4table['CTGA']['CTGA'], ID+ID+ID+ID, msg="AAAA-AAAA table 4 test failed!")
-    eq_(size4table['AATT']['TTAA'], TV+TV+TV+TV, msg="AAAA-AAAA table 4 test failed!")
-    eq_(size4table['GCGC']['ACAC'], TS+ID+TS+ID, msg="AAAA-AAAA table 4 test failed!")
-    eq_(size4table['TCGA']['TAAT'], ID+TV+TS+TV, msg="AAAA-AAAA table 4 test failed!")
+    eq_(size4table['CTGA']['CTGA'], ID+ID+ID+ID, msg="CTGA-CTGA table 4 test failed!")
+    eq_(size4table['AATT']['TTAA'], TV+TV+TV+TV, msg="AATT-TTAA table 4 test failed!")
+    eq_(size4table['GCGC']['ACAC'], TS+ID+TS+ID, msg="GCGC-ACAC table 4 test failed!")
+    eq_(size4table['TCGA']['TAAT'], ID+TV+TS+TV, msg="TCGA-TAAT table 4 test failed!")
+    eq_(size4table['AGCT']['ACGT'], ID+TV+TV+ID, msg="AGCT-ACGT table 4 test failed!")
+    eq_(size4table['TCTT']['TAAT'], ID+TV+TV+ID, msg="TCTT-TAAT table 4 test failed!")
+    eq_(size4table['TACT']['AAAG'], TV+ID+TV+TV, msg="TACT-AAAG table 4 test failed!")
+    eq_(size4table['GGCA']['TGAC'], TV+ID+TV+TV, msg="GGCA-TGAC table 4 test failed!")
+    eq_(size4table['AGCA']['GAAT'], TS+TS+TV+TV, msg="AGCA-GAAT table 4 test failed!")
+    eq_(size4table['TTGG']['TTGG'], ID+ID+ID+ID, msg="TTGG-TTGG table 4 test failed!")
+    
+def test_seqsubstr1():
+    """
+    test_seqsubstr1
+    
+    Checks that the substrings are correctly parsed from an input sequence
+    given a specified overhang size.
+    
+    "ATGCATG" with overhang size 4 should produce a dictionary as follows:
+    {} = {  '0':'ATGC',
+            '1':'TGCA',
+            '2':'GCAT',
+            '3':'CATG'}
+    """ 
+    
+    seq = "ATGCATG"
+    size = 4
+    
+    testdict = {0:'ATGC',
+                1:'TGCA',
+                2:'GCAT',
+                3:'CATG'}
+    
+    newdict = ggsoft.getsubstrings(seq, size)
+    
+    eq_(newdict[0], testdict[0], msg="Overhang equality at index 0 failed!")
+    eq_(newdict[1], testdict[1], msg="Overhang equality at index 1 failed!")
+    eq_(newdict[2], testdict[2], msg="Overhang equality at index 2 failed!")
+    eq_(newdict[3], testdict[3], msg="Overhang equality at index 3 failed!")
+    
+def test_seqsubstr2():
+    """
+    test_seqsubstr2
+    
+    """
+    
+    seq = "AAAATTTTGGGGCCCC"
+    size = 6
+    
+    testdict = {0:'AAAATT',
+                1:'AAATTT',
+                2:'AATTTT',
+                3:'ATTTTG',
+                4:'TTTTGG',
+                5:'TTTGGG',
+                6:'TTGGGG',
+                7:'TGGGGC',
+                8:'GGGGCC',
+                9:'GGGCCC',
+                10:'GGCCCC'}
+    
+    newdict = ggsoft.getsubstrings(seq,size)
+    
+    for i in range(len(seq)-size+1):
+        eq_(newdict[i], testdict[i], msg="Overhang equality at index %d failed!" % i)
+        
+def test_scorecalc():
+    """
+    test_scorecalc
+    
+    Checks that scores for an overhang list are calculated correctly
+    
+    "agAGATcaGTCTcaTACGaa" with overhang list ['AGAT','GTCT','TACG']
+    should calculate as follows:
+    AGAT-GTCT: TS+TV+TV+ID = 1+4+4+0 = 9
+    AGAT-TACG: TV+TS+TV+TV = 4+1+4+4 = 13
+    GTCT-TACG: TV+TV+ID+TV = 4+4+0+4 = 12
+    Sum = 9+13+12 = 34
+    """
+    
+    size = 4
+    size4table = ggsoft.buildtable(size)    
+    
+    OHlist1 = ['AGAT','GTCT','TACG']    
+    testscore1 = 34
+    newscore1 = ggsoft.calc_score(OHlist1,size4table)
+    
+    eq_(newscore1, testscore1, msg="size 4 score calculation 1 failed!")
+    
+    OHlist2 = ['AAAA','GATC','GGAT']
+    testscore2 = 21
+    newscore2 = ggsoft.calc_score(OHlist2,size4table)
+    
+    eq_(newscore2, testscore2, msg="size 4 score calculation 2 failed!")
+    
+def test_scorecalc2():
+    """
+    test_scorecalc2
+    
+    Checks that scores for an overhang list are calculated correctly
+    """
+    
+    size = 6
+    size6table = ggsoft.buildtable(size)
+    
+    # AAAAAA-TTTTTT: TV*6 = 24
+    # AAAAAA-GGGGGG: TS*6 = 6
+    # TTTTTT-GGGGGG: TV*6 = 24
+    # total score = 54
+    OHlist1 = ['AAAAAA','TTTTTT','GGGGGG']
+    testscore1 = 54
+    newscore1 = ggsoft.calc_score(OHlist1,size6table)
+    
+    eq_(newscore1, testscore1, msg="size 6 score calculation 1 failed!")
+    
+    # AAAAAA-TTTTTT: TV*6 = 24
+    # AAAAAA-ACACAC: ID*3+TV*3 = 0+12 = 12
+    # AAAAAA-TCTAGT: ID*1+TS*1+TV*4 = 0+1+16 = 17
+    # TTTTTT-ACACAC: TS*3+TV*3 = 3+12 = 15
+    # TTTTTT-TCTAGT: ID*3+TS*1+TV*2 = 0+1+8 = 9
+    # ACACAC-TCTAGT: TV+ID+TV+TV+TS+TS = 0+2+12 = 14
+    # Sum = 100
+    OHlist2 = ['AAAAAA','TTTTTT','ACACAC','TCTAGT']
+    testscore2 = 91
+    newscore2 = ggsoft.calc_score(OHlist2,size6table)
+    
+    eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")
+    
+    
