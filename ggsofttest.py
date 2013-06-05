@@ -8,7 +8,7 @@
 #
 #==============================================================================
 
-import ggsoft
+import ggsoft, pprint
 from nose.tools import ok_, eq_, raises
 
 # checks that sequence parser functions correctly
@@ -248,10 +248,11 @@ def test_regionfinder():
     
     seq1 = "AAAATTTT"
            #01234567
+    OHsize1 = 4
     minsize1 = 2
     maxsize1 = 6
-    correct1 = [[2,3,4,5]]
-    rlist1 = ggsoft.find_regions(seq1, minsize1, maxsize1)
+    correct1 = [[2]]
+    rlist1 = ggsoft.find_regions(seq1, OHsize1, minsize1, maxsize1)  
     
     eq_(rlist1, correct1, msg="regionfinder test 1 failed!")
 
@@ -259,32 +260,23 @@ def test_regionfinder():
            #01234567890123456789
           #"aaAATTttggGGCcccaAAA" current result
           #"aaAATTttGGGGccCCAAaa" want this
+    OHsize2 = 4
     minsize2 = 2
     maxsize2 = 6
-    correct2 = [[2,3,4,5],[8,9,10,11],[14,15,16,17]]
-    rlist2 = ggsoft.find_regions(seq2, minsize2, maxsize2)
-    
+    correct2 = [[2,3,4,5],[8,9,10,11],[14]]
+    rlist2 = ggsoft.find_regions(seq2, OHsize2, minsize2, maxsize2)
+
     eq_(rlist2, correct2, msg="regionfinder test 2 failed!")
     
     testfile1 = open("P42212.fasta", "r")
     seq3 = ggsoft.process(testfile1)
-    
+    OHsize3 = 4
     minsize3 = 20
     maxsize3 = 30
-    rlist3 = ggsoft.find_regions(seq3, minsize3, maxsize3)
-    
-    print "rlist3"
-    print rlist3
-    print "length"
-    print len(seq3)
+    correct3 = [[20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [200, 201, 202, 203, 204, 205, 206, 207, 208, 209], [230, 231, 232]]
+    rlist3 = ggsoft.find_regions(seq3, OHsize3, minsize3, maxsize3)
 
-def test_combofinder():
-    """
-    test_combofinder
-    
-    Checks that all valid combinations are found correctly
-    """
-    assert False
+    eq_(rlist3, correct3, msg="regionfinder test 3 failed!")
 
 def test_validdist1():
     """
@@ -325,6 +317,39 @@ def test_validdist1():
     
     valid4 = ggsoft._valid_distance(OHindexL4, OHindexU4, mindist4, maxdist4)
     ok_(not valid4, msg="valid distance test 4 failed!")
+
+def test_combofinder():
+    """
+    test_combofinder
+    
+    Checks that all valid combinations are found correctly
+    """
+    seq = "AAAATTTTGGGGCCCCAAAA"
+    OHsize = 4
+    minsize = 2
+    maxsize = 6
+    validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
+    correct = ['AATT']
+    
+    print "validcombos"
+    pprint.pprint(validcombos)
+
+def test_scoreall():
+    """
+    test_scoreall
+    
+    Checks that combinations are scored correctly
+    """
+    seq = "AAAATTTTGGGGCCCCAAAA"
+    OHsize = 4
+    minsize = 2
+    maxsize = 6
+    validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
+    scored = ggsoft.scoreall(validcombos, OHsize)
+    
+    print "scored"
+    pprint.pprint(scored)
+
 
 def test_scorecalc1():
     """
@@ -388,24 +413,5 @@ def test_scorecalc2():
     
     eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")
     
-def test_combofinder1():
-    """
-    test_combofinder1
-    
-    Checks that all valid combinations are found correctly
-    """
-    
-    # fragment size between 4-8bp    
-    seq = "aaaaTTTTaaaa"
-    OHsize = 4
-    minsize = 4
-    maxsize = 8
-    """    
-    TTTT
-    """
-    combolist1 = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
-    testlist1 = ['TTTT']    
-    
-    eq_(combolist1, testlist1, msg="combofinder 1 failed!")
-    
+
     

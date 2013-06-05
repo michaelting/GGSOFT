@@ -25,6 +25,7 @@ from Bio import SeqIO
 
 import math
 import itertools
+import pprint
 
 # Generator to extract all sequences from FASTA file
 # DOES NOT remove the ">" in the name when processed
@@ -194,7 +195,7 @@ def getsubstrings(seq, size):
 
     return subdict
 
-def find_regions(seq, minsize, maxsize):
+def find_regions(seq, OHsize, minsize, maxsize):
     """
     Loops through the entire sequence to find regions and store them into
     a list of lists of valid indices for overhang positions.
@@ -245,14 +246,13 @@ def find_regions(seq, minsize, maxsize):
         
         for j in range(maxsize-minsize):
             
-            if i >= len(seq)-minsize:
+            if i >= len(seq)-OHsize-1:
                 break
                 #continue
             else:            
                 region.append(i)
             i += 1
-            
-        print "lalalal"
+
         # the list "region" is not empty
         if region:
             regionlist.append(region)
@@ -280,11 +280,46 @@ def find_combos(seq, OHsize, minsize, maxsize):
     subdict = getsubstrings(seq, OHsize)
 
     # divide into regions
+    regionlist = find_regions(seq, OHsize, minsize, maxsize)  
+    
+    # find all combinations
+    combolist = list(itertools.product(*regionlist))
+    
+    #print "combolist"
+    #pprint.pprint(combolist)
 
-    # start from a reference index, go from minsize to maxsize
+    checked = []    # holds valid overhang combinations
+    # [[0,1],[4,5],[8,9]] becomes
+    # [[0,4,8],[0,4,9],[0,5,8],[0,5,9],[1,4,8],[1,4,9],[1,5,8],[1,5,9]]
+    for combo in combolist:
+        # [0,4,8]
+        # checks that 0-->4 and 4-->8 are valid distances; if so, add the 
+        # combo [0,4,8] to the list "checked"
+        keep = True
+        for index in range(len(combo)-1):
+            valid = _valid_distance(combo[index], combo[index+1], minsize, maxsize)
+            if not valid:
+                keep = False
+            #else:
+        if keep:
+            checked.append(combo)
+        #else:
+        #    continue
+        
+    #print "checked"
+    #pprint.pprint(checked)
+    
+    # convert checked list to overhang list
+    OHcombolist = []
+    for combo in checked:
+        overhang = []
+        for seqindex in combo:
+            OHseq = subdict[seqindex]
+            overhang.append(OHseq)
+        OHcombolist.append(overhang)
 
-    for index in range(len(subdict.keys())):
-        print "hello"
+
+    return OHcombolist
 
 # Checks that regions are within a valid distance from each other
 # Alternatively, checks that fragment sizes are within user specifications
@@ -301,10 +336,25 @@ def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
     """
     dist = math.fabs(OHindex2-OHindex1)
     
-    if dist in range(mindist, maxdist):
+    # inclusive, meaning [mindist, maxdist]
+    if dist in range(mindist, maxdist+1):
         return True
     else:
         return False
+
+def scoreall(OHcombolist, OHsize):
+    
+    scoretable = buildtable(OHsize)
+
+    scored_combos = []    
+    for combo in OHcombolist:
+        score = calc_score(combo, scoretable)
+        paired = (score, combo)
+        scored_combos.append(paired)
+        
+    scored_combos.sort()
+    
+    return scored_combos
     
 
 # Find the total score of one overhang combination ---------------------------
@@ -352,35 +402,6 @@ def calc_score(OHlist, scoretable):
             totalscore += score
     
     return totalscore 
-
-"""
-# Finds fragments of specified size
-def ggsize(seq, minsize, maxsize):
-
-    # dictionary to hold indices of linkers
-    # keys: linker nucleotide sequence
-    # values: index of first nucleotide in linker
-    linkers = dict()
-
-    i = 0
-    step = 0
-    while i < len(seq):
-        link = seq[i:i+4]
-        # if linker not yet listed in dictionary
-        if not linkers[link]:
-            # add link with index to dictionary
-            linkers[link] = i
-            i += minsize
-        elif step > maxsize:
-            # deal with abnormalities
-
-    for i in range(0,len(seq), minsize):
-        link = seq[i:i+4]
-        # if linker not yet listed in dictionary
-        if not linkers[link]:
-            # add link with index to dictionary
-            linkers[link] = i
-"""
 
 # Finds a specific number of fragments ---------------------------------------
 
