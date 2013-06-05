@@ -238,6 +238,35 @@ def test_seqsubstr2():
     for i in range(len(seq)-size+1):
         eq_(newdict[i], testdict[i], msg="Overhang equality at index %d failed!" % i)
 
+def test_regionfinder():
+    """
+    test_regionfinder
+    
+    Checks that regions are properly found in the input sequence for 
+    overhang combination and scoring
+    """
+    
+    seq1 = "AAAATTTT"
+    minsize1 = 2
+    maxsize1 = 6
+    correct1 = [[2,3,4,5]]
+    rlist1 = ggsoft.find_regions(seq1, minsize1, maxsize1)
+    
+    eq_(rlist1, correct1, msg="regionfinder test 1 failed!")
+
+    seq2 = "AAAATTTTGGGGCCCCAAAA"
+           #01234567890123456789
+           "aaAATTttggGGCccccAAA"
+    minsize2 = 2
+    maxsize2 = 6
+    correct2 = [[]]
+    rlist2 = ggsoft.find_regions(seq2, minsize2, maxsize2)
+    
+    print rlist2
+
+def test_combofinder():
+    assert False
+
 def test_validdist1():
     """
     test_validdist1

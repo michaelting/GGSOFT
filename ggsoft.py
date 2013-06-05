@@ -194,6 +194,48 @@ def getsubstrings(seq, size):
 
     return subdict
 
+def find_regions(seq, minsize, maxsize):
+    """
+    Loops through the entire sequence to find regions and store them into
+    a list of lists of valid indices for overhang positions.
+    
+    Input:
+        seq
+        minsize
+        maxsize
+    Output:
+        A list of lists for valid indices for overhang positions.
+        
+    We see a region as follows:
+    
+    NNNN|RRRRR|NNNNNNNN|RRRRR|NNNN    
+    
+    """
+    
+    regionlist = []
+    i = 0
+    # goes from start to end of sequence
+    while i < len(seq):
+        
+        region = []
+        
+        # goes through a single region
+        while ((i % (maxsize+1)) >= minsize) and ((i % (maxsize+1)) < maxsize):
+            
+            "record as valid OH"
+            region.append(i)                
+                
+            i += 1
+        
+        # the list "region" is not empty
+        if region:
+            regionlist.append(region)
+            
+        # increment to next region's starting point
+        i += minsize
+        
+    return regionlist
+
 # find all valid overhang combinations ---------------------------------------
 def find_combos(seq, OHsize, minsize, maxsize):
     """
@@ -223,6 +265,16 @@ def find_combos(seq, OHsize, minsize, maxsize):
 # Checks that regions are within a valid distance from each other
 # Alternatively, checks that fragment sizes are within user specifications
 def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
+    """
+    Helper function to determine whether the distance between two overhang 
+    window regions satisfies the constraints set by fragment sizes
+    specified by the user.
+    
+    Input:
+    
+    Output:
+    
+    """
     dist = math.fabs(OHindex2-OHindex1)
     
     if dist in range(mindist, maxdist):
