@@ -212,6 +212,7 @@ def find_regions(seq, minsize, maxsize):
     
     """
     
+    """
     regionlist = []
     i = 0
     # goes from start to end of sequence
@@ -235,6 +236,22 @@ def find_regions(seq, minsize, maxsize):
         i += minsize
         
     return regionlist
+    """
+    regionlist = []
+    # start from minimum fragment size
+    for i in range(minsize,len(seq),maxsize):
+        
+        region = []
+        
+        for j in range(maxsize-minsize):
+            region.append(i)
+            i += 1
+        # the list "region" is not empty
+        if region:
+            regionlist.append(region)
+        
+    return regionlist
+        
 
 # find all valid overhang combinations ---------------------------------------
 def find_combos(seq, OHsize, minsize, maxsize):

@@ -247,6 +247,7 @@ def test_regionfinder():
     """
     
     seq1 = "AAAATTTT"
+           #01234567
     minsize1 = 2
     maxsize1 = 6
     correct1 = [[2,3,4,5]]
@@ -256,15 +257,21 @@ def test_regionfinder():
 
     seq2 = "AAAATTTTGGGGCCCCAAAA"
            #01234567890123456789
-           "aaAATTttggGGCccccAAA"
+          #"aaAATTttggGGCcccaAAA" current result
+          #"aaAATTttGGGGccCCAAaa" want this
     minsize2 = 2
     maxsize2 = 6
-    correct2 = [[]]
+    correct2 = [[2,3,4,5],[8,9,10,11],[14,15,16,17]]
     rlist2 = ggsoft.find_regions(seq2, minsize2, maxsize2)
     
-    print rlist2
+    eq_(rlist2, correct2, msg="regionfinder test 2 failed!")
 
 def test_combofinder():
+    """
+    test_combofinder
+    
+    Checks that all valid combinations are found correctly
+    """
     assert False
 
 def test_validdist1():
