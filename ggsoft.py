@@ -4,44 +4,29 @@
 # ggsoft.py
 # Michael Ting
 # 28 May 2013
+# v1.0 updated 5 June 2013
+#
+# GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
 #
 # Finds top-scoring overhangs for type IIs restriction enzyme digestion 
-#   of a user-specified fragment size
+#   of a user-specified fragment size. Overhangs are scored by maximal distance
+#   between all overhang pairs using a scoring function which currently
+#   uses base substitution (transversion, transition, identical) to correspond
+#   to distance, with TV:4, TS:1, ID:0. 
 #
-# Ideas: 
-#   - input an overhang size, which calculates pairwise overhang scores.
-#       - more similar overhangs receive a worse score, since we want to keep
-#         overhangs as different as possible to optimize DNA assembly
-#         conditions (especially one-pot reactions)
-#       - 4-base overhang = 256 combinations (4^4), n positions ^ 4 bases
-#       - use the overhang size to build a table initially to store pairwise
-#         score for hashing
-#   - input a minimum/maximum fragment size to specify window locations
+# This tool can be used for
+#
+# Notes:
+#   - Current version uses an oversimplified scoring function.
+#   - For small fragment sizes, computation of overhang window regions may
+#     use up memory and cause the program to fail. Further optimization is
+#     needed to reduce memory usage - such as with heuristics.
 #
 #==============================================================================
 
+import math, itertools
 from optparse import OptionParser
 from Bio import SeqIO
-
-import math
-import itertools
-import pprint
-
-# Generator to extract all sequences from FASTA file
-# DOES NOT remove the ">" in the name when processed
-"""
-def process(infile):
-    name, seq = None, []
-    for line in infile:
-        if line.startswith(">"):
-            if name:
-                yield (name, ''.join(seq))
-            name, seq = line.strip(), []
-        else:
-            seq.append(line.strip())
-    if name:
-        yield (name, ''.join(seq))
-"""
 
 # Uses the Biopython package SeqIO to extract information from a FASTA file
 def process(infile):
@@ -213,31 +198,6 @@ def find_regions(seq, OHsize, minsize, maxsize):
     
     """
     
-    """
-    regionlist = []
-    i = 0
-    # goes from start to end of sequence
-    while i < len(seq):
-        
-        region = []
-        
-        # goes through a single region
-        while ((i % (maxsize+1)) >= minsize) and ((i % (maxsize+1)) < maxsize):
-            
-            "record as valid OH"
-            region.append(i)                
-                
-            i += 1
-        
-        # the list "region" is not empty
-        if region:
-            regionlist.append(region)
-            
-        # increment to next region's starting point
-        i += minsize
-        
-    return regionlist
-    """
     regionlist = []
     # start from minimum fragment size
     for i in range(minsize,len(seq),maxsize):
@@ -276,17 +236,11 @@ def find_combos(seq, OHsize, minsize, maxsize):
         with their score
     """
 
-    # associate indices with overhang-sized fragments
-    subdict = getsubstrings(seq, OHsize)
-
     # divide into regions
     regionlist = find_regions(seq, OHsize, minsize, maxsize)  
     
     # find all combinations
     combolist = list(itertools.product(*regionlist))
-    
-    #print "combolist"
-    #pprint.pprint(combolist)
 
     checked = []    # holds valid overhang combinations
     # [[0,1],[4,5],[8,9]] becomes
@@ -300,31 +254,11 @@ def find_combos(seq, OHsize, minsize, maxsize):
             valid = _valid_distance(combo[index], combo[index+1], minsize, maxsize)
             if not valid:
                 keep = False
-            #else:
         if keep:
             checked.append(combo)
-        #else:
-        #    continue
-        
-    #print "checked"
-    #pprint.pprint(checked)
         
     # return groups of valid indices for overhangs
     return checked
-
-    """    
-    
-    # convert checked list to overhang list
-    OHcombolist = []
-    for combo in checked:
-        overhang = []
-        for seqindex in combo:
-            OHseq = subdict[seqindex]
-            overhang.append(OHseq)
-        OHcombolist.append(overhang)
-
-    return OHcombolist
-    """
 
 # Checks that regions are within a valid distance from each other
 # Alternatively, checks that fragment sizes are within user specifications
@@ -355,10 +289,7 @@ def scoreall(checked, OHsize, subdict):
     Key: [0,1,2]
     Value: (36, ['AAAA','TTTT','GGGG'])
     """
-    
-    # associate indices with overhang-sized fragments
-    #subdict = getsubstrings(seq, OHsize)    
-    
+       
     # create scoring table for overhangs
     scoretable = buildtable(OHsize)
     
@@ -375,17 +306,6 @@ def scoreall(checked, OHsize, subdict):
         value_pair = (score, overhangs)         
         OHcombodict[combo] = value_pair
 
-    """
-    scored_combos = []    
-    for combo in OHcombolist:
-        score = calc_score(combo, scoretable)
-        paired = (score, combo)
-        scored_combos.append(paired)
-        
-    scored_combos.sort()
-    
-    return scored_combos
-    """
     # sort the k,v pairs by score from highest to lowest
     sorteddict = sorted(OHcombodict.items(), key=lambda (k,v): v, reverse=True)
     
@@ -436,63 +356,7 @@ def calc_score(OHlist, scoretable):
             
             totalscore += score
     
-    return totalscore 
-
-# Finds a specific number of fragments ---------------------------------------
-
-""" Major issue: need to find sequences inbetween without going off the edges
-    or hitting index 0 mod fragnum
-    
-    Re-write this method to use a window size
-"""
-def ggnum(seq, fragnum):
-    
-    length = len(seq)
-    stepsize = length / int(fragnum)
-    steps = length % int(fragnum)
-    # total number of fragments = # overhangs - 1
-    totalfrags = int(fragnum)-1 # uses range from 0,...,fragnum
-
-    linkdict = dict()
-
-    """
-    This iterates using the index - instead, should iterate using the number
-    of fragments to be produced - 1 (3 fragments means 2 linkers)
-    """
-    """
-    # find links
-    i = stepsize
-    while i < length:
-        start = i-2
-        end = i+2
-        link = seq[start:end]
-        # if linker is not already in dictionary
-        if link not in linkdict.keys():
-            linkdict[link] = start
-            i += stepsize
-        else:
-            i += 1
-    """
-            
-    i = stepsize
-    for num in range(totalfrags):
-        start = i-2
-        end = i+2
-        link = seq[start:end]
-        # if linker is not already in dictionary
-        if link not in linkdict.keys():
-            linkdict[link] = start
-            i += stepsize
-        else:
-            i += 1
-
-    # extract links from dictionary
-    fraglist = []
-    for link, index in linkdict.items():
-        frag = (link, index)
-        fraglist.append(frag)
-
-    return fraglist
+    return totalscore
 
 # executes when program run from command line --------------------------------
 def main():
@@ -503,7 +367,6 @@ def main():
     parser.add_option("-o", "--out", dest="outfile", help="name of output FASTA file")
     parser.add_option("-m", "--min", dest="minsize", help="minimum fragment size")
     parser.add_option("-n", "--max", dest="maxsize", help="maximum fragment size")
-    parser.add_option("-c", "--count", dest="fragcount", help="number of fragments to produce")
     parser.add_option("-s", "--size", dest="OHsize", help="overhang size in bp")
 
     """also need an option for enzyme type to overhang bp size"""
@@ -514,74 +377,25 @@ def main():
     outfile = options.outfile
     minsize = int(options.minsize)
     maxsize = int(options.maxsize)
-    fragcount = options.fragcount
     OHsize = int(options.OHsize)
 
     template = open(infile)
     newfile = open(outfile, 'w')
-
-    # extract the sequence from the FASTA file -------------------------------
-    # using the process() generator
-    """
-    seqlist = []
-    for name, seq in process(template):
-        print "name, seq: " + name + ", " + seq
-        item = (name, seq)
-        #print "item" + item
-        seqlist.append(item)
-
-    print seqlist
-    
-    template.close()
-
-    # Ensure FASTA file has only 1 sequence ----------------------------------
-    if len(seqlist) > 1:
-        raise IOError("Too many sequences! Only one sequence per file allowed!")
-    elif len(seqlist) < 1:
-        raise IOError("Not enough sequences! Only one sequence per file allowed!")
-
-    """
     
     seq = process(template)    
     
     template.close()
-
-
-    # build the scoring table using the given fragment size
-    #score_table = buildtable(OHsize)
-
-    # Find the fragments of specified size in the sequence -------------------
-    """
-    info = seqlist[0][0]
-    seq = seqlist[0][1]
-    print "info: " + info
-    print "seq: " + seq
-    
-    #fraglist = goldengate(seq, minsize, maxsize)
-    fraglist = ggnum(seq, fragcount)
-    """
     
     combos = find_combos(seq, OHsize, minsize, maxsize)
     
     subdict = getsubstrings(seq, OHsize)
     
     scored_list = scoreall(combos, OHsize, subdict)
-    
-    pprint.pprint(scored_list)    
-    
-    """
-    # Print the fragment results ---------------------------------------------
-    #print info + "\n"
-    for frag in fraglist:
-        print str(frag) + "\n"
-    """
 
     # need to write to new file! ---------------------------------------------
     for scored_combo in scored_list:
         string_combo = str(scored_combo)
         string_combo = string_combo.replace("'","")
-        print "string_combo"
-        print string_combo
         # write to file
         newfile.write("%s\n" % string_combo)
 

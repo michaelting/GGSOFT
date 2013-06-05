@@ -8,7 +8,7 @@
 #
 #==============================================================================
 
-import ggsoft, pprint
+import ggsoft
 from nose.tools import ok_, eq_, raises
 
 # checks that sequence parser functions correctly
@@ -257,9 +257,9 @@ def test_regionfinder():
     eq_(rlist1, correct1, msg="regionfinder test 1 failed!")
 
     seq2 = "AAAATTTTGGGGCCCCAAAA"
-           #01234567890123456789
-          #"aaAATTttggGGCcccaAAA" current result
-          #"aaAATTttGGGGccCCAAaa" want this
+          # 01234567890123456789
+          # aaAATTttggGGCcccaAAA current result
+          # aaAATTttGGGGccCCAAaa want this
     OHsize2 = 4
     minsize2 = 2
     maxsize2 = 6
@@ -332,9 +332,6 @@ def test_combofinder():
     correct = [(2, 8, 14), (3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (4, 10, 14), (5, 8, 14), (5, 9, 14), (5, 10, 14), (5, 11, 14)]
 
     eq_(validcombos, correct, msg="combofinder test failed!")
-    
-    #print "validcombos"
-    #pprint.pprint(validcombos)
 
 def test_scoreall():
     """
@@ -352,9 +349,6 @@ def test_scoreall():
     correct = [((4, 8, 14), (36, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (36, ['TTTT', 'GGGC', 'CCAA'])), ((4, 10, 14), (36, ['TTTT', 'GGCC', 'CCAA'])), ((5, 9, 14), (36, ['TTTG', 'GGGC', 'CCAA'])), ((5, 10, 14), (36, ['TTTG', 'GGCC', 'CCAA'])), ((3, 8, 14), (36, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (36, ['ATTT', 'GGGC', 'CCAA'])), ((2, 8, 14), (36, ['AATT', 'GGGG', 'CCAA'])), ((5, 8, 14), (29, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (29, ['TTTG', 'GCCC', 'CCAA']))]
     
     eq_(correct, scored, msg="scoreall test failed!")
-    
-    #print "scored"
-    #pprint.pprint(scored)
 
 
 def test_scorecalc1():
@@ -418,6 +412,3 @@ def test_scorecalc2():
     newscore2 = ggsoft.calc_score(OHlist2,size6table)
     
     eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")
-    
-
-    
