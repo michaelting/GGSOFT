@@ -329,10 +329,12 @@ def test_combofinder():
     minsize = 2
     maxsize = 6
     validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
-    correct = ['AATT']
+    correct = [(2, 8, 14), (3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (4, 10, 14), (5, 8, 14), (5, 9, 14), (5, 10, 14), (5, 11, 14)]
+
+    eq_(validcombos, correct, msg="combofinder test failed!")
     
-    print "validcombos"
-    pprint.pprint(validcombos)
+    #print "validcombos"
+    #pprint.pprint(validcombos)
 
 def test_scoreall():
     """
@@ -345,10 +347,14 @@ def test_scoreall():
     minsize = 2
     maxsize = 6
     validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
-    scored = ggsoft.scoreall(validcombos, OHsize)
+    subdict = ggsoft.getsubstrings(seq, OHsize)
+    scored = ggsoft.scoreall(validcombos, OHsize, subdict)
+    correct = [((4, 8, 14), (36, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (36, ['TTTT', 'GGGC', 'CCAA'])), ((4, 10, 14), (36, ['TTTT', 'GGCC', 'CCAA'])), ((5, 9, 14), (36, ['TTTG', 'GGGC', 'CCAA'])), ((5, 10, 14), (36, ['TTTG', 'GGCC', 'CCAA'])), ((3, 8, 14), (36, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (36, ['ATTT', 'GGGC', 'CCAA'])), ((2, 8, 14), (36, ['AATT', 'GGGG', 'CCAA'])), ((5, 8, 14), (29, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (29, ['TTTG', 'GCCC', 'CCAA']))]
     
-    print "scored"
-    pprint.pprint(scored)
+    eq_(correct, scored, msg="scoreall test failed!")
+    
+    #print "scored"
+    #pprint.pprint(scored)
 
 
 def test_scorecalc1():

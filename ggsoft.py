@@ -308,6 +308,11 @@ def find_combos(seq, OHsize, minsize, maxsize):
         
     #print "checked"
     #pprint.pprint(checked)
+        
+    # return groups of valid indices for overhangs
+    return checked
+
+    """    
     
     # convert checked list to overhang list
     OHcombolist = []
@@ -318,8 +323,8 @@ def find_combos(seq, OHsize, minsize, maxsize):
             overhang.append(OHseq)
         OHcombolist.append(overhang)
 
-
     return OHcombolist
+    """
 
 # Checks that regions are within a valid distance from each other
 # Alternatively, checks that fragment sizes are within user specifications
@@ -342,10 +347,35 @@ def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
     else:
         return False
 
-def scoreall(OHcombolist, OHsize):
+def scoreall(checked, OHsize, subdict):
+    """
+    Returns a list of valid indices with their corresponding overhangs and
+    score, sorted by highest score to lowest score
     
+    Key: [0,1,2]
+    Value: (36, ['AAAA','TTTT','GGGG'])
+    """
+    
+    # associate indices with overhang-sized fragments
+    #subdict = getsubstrings(seq, OHsize)    
+    
+    # create scoring table for overhangs
     scoretable = buildtable(OHsize)
+    
+    OHcombodict = {}
+    # combo looks like [0,5,9]
+    for combo in checked:
+        overhangs = []
+        for seqindex in combo:
+            OHseq = subdict[seqindex]
+            overhangs.append(OHseq)
+        # overhangs has sequences corresponding to indices in combo, so
+        # [0,5,9] becomes ['AAAA','TTTT','GGGG']
+        score = calc_score(overhangs, scoretable)
+        value_pair = (score, overhangs)         
+        OHcombodict[combo] = value_pair
 
+    """
     scored_combos = []    
     for combo in OHcombolist:
         score = calc_score(combo, scoretable)
@@ -355,6 +385,11 @@ def scoreall(OHcombolist, OHsize):
     scored_combos.sort()
     
     return scored_combos
+    """
+    # sort the k,v pairs by score from highest to lowest
+    sorteddict = sorted(OHcombodict.items(), key=lambda (k,v): v, reverse=True)
+    
+    return sorteddict
     
 
 # Find the total score of one overhang combination ---------------------------
@@ -477,10 +512,10 @@ def main():
 
     infile = options.infile
     outfile = options.outfile
-    minsize = options.minsize
-    maxsize = options.maxsize
+    minsize = int(options.minsize)
+    maxsize = int(options.maxsize)
     fragcount = options.fragcount
-    OHsize = options.OHsize
+    OHsize = int(options.OHsize)
 
     template = open(infile)
     newfile = open(outfile, 'w')
@@ -513,7 +548,7 @@ def main():
 
 
     # build the scoring table using the given fragment size
-    score_table = buildtable(OHsize)
+    #score_table = buildtable(OHsize)
 
     # Find the fragments of specified size in the sequence -------------------
     """
@@ -521,17 +556,36 @@ def main():
     seq = seqlist[0][1]
     print "info: " + info
     print "seq: " + seq
-    """
+    
     #fraglist = goldengate(seq, minsize, maxsize)
     fraglist = ggnum(seq, fragcount)
+    """
     
+    combos = find_combos(seq, OHsize, minsize, maxsize)
+    
+    subdict = getsubstrings(seq, OHsize)
+    
+    scored_list = scoreall(combos, OHsize, subdict)
+    
+    pprint.pprint(scored_list)    
+    
+    """
     # Print the fragment results ---------------------------------------------
     #print info + "\n"
     for frag in fraglist:
         print str(frag) + "\n"
+    """
 
     # need to write to new file! ---------------------------------------------
-    #for frag in fraglist:
+    for scored_combo in scored_list:
+        string_combo = str(scored_combo)
+        string_combo = string_combo.replace("'","")
+        print "string_combo"
+        print string_combo
+        # write to file
+        newfile.write("%s\n" % string_combo)
+
+    newfile.close()
 
 if __name__ == "__main__":
     main()
