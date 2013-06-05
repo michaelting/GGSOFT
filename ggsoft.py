@@ -208,7 +208,7 @@ def find_regions(seq, minsize, maxsize):
         
     We see a region as follows:
     
-    NNNN|RRRRR|NNNNNNNN|RRRRR|NNNN    
+    NNNN|RRRRR|NNNN|RRRRR|NNNN    
     
     """
     
@@ -244,8 +244,15 @@ def find_regions(seq, minsize, maxsize):
         region = []
         
         for j in range(maxsize-minsize):
-            region.append(i)
+            
+            if i >= len(seq)-minsize:
+                break
+                #continue
+            else:            
+                region.append(i)
             i += 1
+            
+        print "lalalal"
         # the list "region" is not empty
         if region:
             regionlist.append(region)

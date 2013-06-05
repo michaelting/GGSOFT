@@ -265,6 +265,18 @@ def test_regionfinder():
     rlist2 = ggsoft.find_regions(seq2, minsize2, maxsize2)
     
     eq_(rlist2, correct2, msg="regionfinder test 2 failed!")
+    
+    testfile1 = open("P42212.fasta", "r")
+    seq3 = ggsoft.process(testfile1)
+    
+    minsize3 = 20
+    maxsize3 = 30
+    rlist3 = ggsoft.find_regions(seq3, minsize3, maxsize3)
+    
+    print "rlist3"
+    print rlist3
+    print "length"
+    print len(seq3)
 
 def test_combofinder():
     """
