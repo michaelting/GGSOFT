@@ -1,24 +1,24 @@
 #!/usr/bin/python
 
 #==============================================================================
-#
-# ggsofttest.py
-#
 # Unit testing file for ggsoft.py using the nose framework
+# Copyright 2013 Michael Ting
+# https://github.com/michaelting
+# Created 28 May 2013
+# v1.0 updated 5 June 2013
+#
+# Tests can be run using "$ nosetests ggsofttest.py"
+# 
+# Options:
+#   -v : verbose, displays test names
+#   -x : stop the test at the first failure
+#   --nocapture : prevent nose from capturing stdout output
 #
 #==============================================================================
 
 import ggsoft
 from nose.tools import ok_, eq_, raises
 
-# checks that sequence parser functions correctly
-
-"""
-def test_parsefasta():
-
-    eq_(True, False, msg="FASTA file parsed incorrectly!")
-"""
-    
 def test_parsefasta():
     """
     test_parsefasta
@@ -37,8 +37,8 @@ def test_parsefail1():
     """
     test_parsefail1
     
-    Ensures that exception is correctly thrown for multiple FASTA sequences
-    in the same file.
+    Ensures that the ValueError exception is correctly thrown for multiple
+    FASTA sequences in the same input file.
     """
     testfile1 = open("test2.fasta", "r")
     seq1 = ggsoft.process(testfile1)
@@ -49,8 +49,8 @@ def test_parsefail2():
     """
     test_parsefail2
     
-    Ensures that exception is correctly thrown for incorrectly formatted
-    FASTA file
+    Ensures that the ValueError exception is correctly thrown for an 
+    incorrectly formatted input file
     """
     testfile2 = open("parsetestfail.fasta", "r")
     seq2 = ggsoft.process(testfile2)
@@ -66,10 +66,11 @@ def test_parsefail3():
     seq3 = ggsoft.process(testfile3)
     testfile3.close()
 
-# checks that scoring table is built correctly
 def test_scoretable_size1():
     """
     test_scoretable_size1    
+    
+    Checks that scoring table is built correctly for 1x1 overhangs  
     
     Input size 1 overhang:
     |N
@@ -80,7 +81,6 @@ def test_scoretable_size1():
     T   4   0   4   1
     G   1   4   0   4
     C   4   1   4   0
-    
     """
     
     TV = 4  # transversion
@@ -109,6 +109,8 @@ def test_scoretable_size1():
 def test_scoretable_size2():
     """
     test_scoretable_size2
+    
+    Checks that scoring table is built correctly for 2x2 overhangs      
     
     input size 2 overhang:
     |NN     |NN
@@ -151,6 +153,8 @@ def test_scoretable_size2():
 def test_scoretable_size4():
     """
     test_scoretable_size4
+    
+    Checks that scoring table is built correctly for 4x4 overhangs      
     
     input size 4 overhang:
     |NNNN
@@ -215,7 +219,6 @@ def test_seqsubstr2():
     
     Checks that the substrings are correctly parsed from an input sequence
     given a specified overhang size.
-    
     """
     
     seq = "AAAATTTTGGGGCCCC"

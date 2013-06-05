@@ -1,12 +1,11 @@
 #!/usr/bin/python
 
 #==============================================================================
-# ggsoft.py
-# Michael Ting
-# 28 May 2013
-# v1.0 updated 5 June 2013
-#
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
+# Copyright 2013 Michael Ting
+# https://github.com/michaelting
+# Created 28 May 2013
+# v1.0 updated 5 June 2013
 #
 # Finds top-scoring overhangs for type IIs restriction enzyme digestion 
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
@@ -14,13 +13,13 @@
 #   uses base substitution (transversion, transition, identical) to correspond
 #   to distance, with TV:4, TS:1, ID:0. 
 #
-# This tool can be used for
-#
 # Notes:
-#   - Current version uses an oversimplified scoring function.
+#   - Current version uses an oversimplified scoring function. Future versions
+#     will explore different scoring functions for higher resolution between
+#     scored overhang combinations.
 #   - For small fragment sizes, computation of overhang window regions may
-#     use up memory and cause the program to fail. Further optimization is
-#     needed to reduce memory usage - such as with heuristics.
+#     use up memory and cause the program to fail. Further optimization 
+#     may utilize heuristics to reduce memory usage.
 #
 #==============================================================================
 
@@ -186,16 +185,12 @@ def find_regions(seq, OHsize, minsize, maxsize):
     a list of lists of valid indices for overhang positions.
     
     Input:
-        seq
-        minsize
-        maxsize
+        seq     - DNA sequence of interest
+        OHsize  - Length of the overhang in bp
+        minsize - Minimum fragment size in bp
+        maxsize - Maximum fragment size in bp
     Output:
-        A list of lists for valid indices for overhang positions.
-        
-    We see a region as follows:
-    
-    NNNN|RRRRR|NNNN|RRRRR|NNNN    
-    
+        regionlist - A list of lists of valid indices for overhang positions.    
     """
     
     regionlist = []
@@ -208,7 +203,6 @@ def find_regions(seq, OHsize, minsize, maxsize):
             
             if i >= len(seq)-OHsize-1:
                 break
-                #continue
             else:            
                 region.append(i)
             i += 1
@@ -218,7 +212,6 @@ def find_regions(seq, OHsize, minsize, maxsize):
             regionlist.append(region)
         
     return regionlist
-        
 
 # find all valid overhang combinations ---------------------------------------
 def find_combos(seq, OHsize, minsize, maxsize):
@@ -232,8 +225,8 @@ def find_combos(seq, OHsize, minsize, maxsize):
         minsize - minimum size of a DNA fragment
         maxsize - maximum size of a DNA fragment
     Output:
-        A list of lists of indices corresponding to valid overhang combinations
-        with their score
+        checked - A list of lists of indices corresponding to valid overhang
+                  combinations with their score
     """
 
     # divide into regions
@@ -260,7 +253,7 @@ def find_combos(seq, OHsize, minsize, maxsize):
     # return groups of valid indices for overhangs
     return checked
 
-# Checks that regions are within a valid distance from each other
+# Checks that regions are within a valid distance from each other ------------
 # Alternatively, checks that fragment sizes are within user specifications
 def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
     """
@@ -269,25 +262,45 @@ def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
     specified by the user.
     
     Input:
-    
+        OHindex1    - Index of first base in first overhang to compare
+        OHindex2    - Index of first base in second overhang to compare
+        mindist     - Minimum distance between regions, equivalent to
+                      the minimum fragment size
+        maxdist     - Maximum distance between regions, equivalent to
+                      the maximum fragment size
     Output:
-    
+        isValid     - A boolean indicating whether the indices of two overhangs
+                      are valid in the sense that they create fragments within
+                      the range of minimum to maximum fragment size.
     """
     dist = math.fabs(OHindex2-OHindex1)
     
+    isValid = False    
+    
     # inclusive, meaning [mindist, maxdist]
     if dist in range(mindist, maxdist+1):
-        return True
-    else:
-        return False
+        isValid = True
+        
+    return isValid
 
 def scoreall(checked, OHsize, subdict):
     """
     Returns a list of valid indices with their corresponding overhangs and
     score, sorted by highest score to lowest score
     
-    Key: [0,1,2]
-    Value: (36, ['AAAA','TTTT','GGGG'])
+    Input:
+        checked - A checked/purged list of overhang index combinations that
+                  has been verified to be within a valid distance
+        OHsize  - Length of the overhangs in bp
+        subdict - A dictionary of (k,v) pairs with keys corresponding to 
+                  indices of bases in the sequence and values corresponding to
+                  overhang substrings of length OHsize
+    Output:
+        sorteddict - A dictionary of (k,v) pairs with keys corresponding to
+                     index sets and values corresponding to tuples of the
+                     overhang set score and the bases in the overhangs 
+                     established by the indices.
+                     {(206, 413, 620): (17, ['GTTA', 'GTAA', 'CTCA'])}
     """
        
     # create scoring table for overhangs
@@ -300,10 +313,13 @@ def scoreall(checked, OHsize, subdict):
         for seqindex in combo:
             OHseq = subdict[seqindex]
             overhangs.append(OHseq)
-        # overhangs has sequences corresponding to indices in combo, so
-        # [0,5,9] becomes ['AAAA','TTTT','GGGG']
+        # 'overhangs' has sequences corresponding to indices in 'combo', so
+        # [0,5,9] translates to ['AAAA','TTTT','GGGG'], where starting at
+        # index 0, a sequence of four (4) bases long is 'AAAA'.
         score = calc_score(overhangs, scoretable)
-        value_pair = (score, overhangs)         
+        value_pair = (score, overhangs)     
+        # Key:      (206,413,620)
+        # Value:    (17, ['GTTA', 'GTAA', 'CTCA'])
         OHcombodict[combo] = value_pair
 
     # sort the k,v pairs by score from highest to lowest
@@ -311,7 +327,6 @@ def scoreall(checked, OHsize, subdict):
     
     return sorteddict
     
-
 # Find the total score of one overhang combination ---------------------------
 def calc_score(OHlist, scoretable):
     """
@@ -331,12 +346,12 @@ def calc_score(OHlist, scoretable):
 
     Input:
         OHlist      - list of overhangs, ['AAAA','GATC','GGAT']
-        scoretable  - double dictionary table, which can be accessed
-                      using scoretable['firstseq']['secondseq']
+        scoretable  - double dictionary table that contains the pairwise
+                      scores for all possible overhang pairs, which can be
+                      accessed using scoretable['firstseq']['secondseq']
     Output:
-        The sum total score of all pairwise comparisons between overhangs in
-        the input list. The lists will later be sorted by score, from which
-        we can access the top x percent, e.g. top 10%    
+        totalscore  - The sum total score of all pairwise comparisons between 
+                      overhangs in the input list.
     """
     
     # Only need to do the upper triangle half of the matrix, otherwise we will
@@ -361,15 +376,13 @@ def calc_score(OHlist, scoretable):
 # executes when program run from command line --------------------------------
 def main():
 
-    # read command-line arguments --------------------------------------------
+    # read command-line arguments
     parser = OptionParser()
     parser.add_option("-i", "--in", dest="infile", help="input sequence FASTA file")
     parser.add_option("-o", "--out", dest="outfile", help="name of output FASTA file")
     parser.add_option("-m", "--min", dest="minsize", help="minimum fragment size")
     parser.add_option("-n", "--max", dest="maxsize", help="maximum fragment size")
     parser.add_option("-s", "--size", dest="OHsize", help="overhang size in bp")
-
-    """also need an option for enzyme type to overhang bp size"""
 
     (options, args) = parser.parse_args()
 
@@ -382,17 +395,20 @@ def main():
     template = open(infile)
     newfile = open(outfile, 'w')
     
+    # parse the sequence from a FASTA file
     seq = process(template)    
-    
     template.close()
     
+    # Find all valid overhang combinations
     combos = find_combos(seq, OHsize, minsize, maxsize)
     
+    # Compute index-->overhang dictionary for fast access
     subdict = getsubstrings(seq, OHsize)
     
+    # Score and sort all overhang combinations
     scored_list = scoreall(combos, OHsize, subdict)
 
-    # need to write to new file! ---------------------------------------------
+    # Write score-sorted overhang combinations to a new file
     for scored_combo in scored_list:
         string_combo = str(scored_combo)
         string_combo = string_combo.replace("'","")
