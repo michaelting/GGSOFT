@@ -24,7 +24,7 @@
 #==============================================================================
 
 import math, itertools
-from optparse import OptionParser
+from argparse import ArgumentParser
 from Bio import SeqIO
 
 # Uses the Biopython package SeqIO to extract information from a FASTA file
@@ -377,20 +377,21 @@ def calc_score(OHlist, scoretable):
 def main():
 
     # read command-line arguments
-    parser = OptionParser()
-    parser.add_option("-i", "--in", dest="infile", help="input sequence FASTA file")
-    parser.add_option("-o", "--out", dest="outfile", help="name of output FASTA file")
-    parser.add_option("-m", "--min", dest="minsize", help="minimum fragment size")
-    parser.add_option("-n", "--max", dest="maxsize", help="maximum fragment size")
-    parser.add_option("-s", "--size", dest="OHsize", help="overhang size in bp")
+    parser = ArgumentParser(description="Set parameters for overhang calculation")
+    
+    parser.add_argument("infile", help="input sequence FASTA file")
+    parser.add_argument("outfile", help="name of output file for scored overhangs")
+    parser.add_argument("minsize", help="minimum fragment size in bp")
+    parser.add_argument("maxsize", help="maximum fragment size in bp")
+    parser.add_argument("OHsize", help="overhang size in bp")
 
-    (options, args) = parser.parse_args()
-
-    infile = options.infile
-    outfile = options.outfile
-    minsize = int(options.minsize)
-    maxsize = int(options.maxsize)
-    OHsize = int(options.OHsize)
+    args = parser.parse_args()
+    
+    infile = args.infile
+    outfile = args.outfile
+    minsize = int(args.minsize)
+    maxsize = int(args.maxsize)
+    OHsize = int(args.OHsize)
 
     template = open(infile)
     newfile = open(outfile, 'w')

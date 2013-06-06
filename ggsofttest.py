@@ -24,7 +24,7 @@ def test_parsefasta():
     Ensures that the FASTA file is being read correctly using the Biopython
     package SeqIO.
     """
-    testfile1 = open("./tests/test.fasta", "r")
+    testfile1 = open("./tests/test1.fasta", "r")
     seq1 = ggsoft.process(testfile1)
     
     eq_(seq1, "AAAATTTT", msg="fasta parser 2 test 1 reading incorrectly!")
@@ -50,7 +50,7 @@ def test_parsefail2():
     Ensures that the ValueError exception is correctly thrown for an 
     incorrectly formatted input file
     """
-    testfile2 = open("./tests/parsetestfail.fasta", "r")
+    testfile2 = open("./tests/test_parsefail.fasta", "r")
     seq2 = ggsoft.process(testfile2)
     testfile2.close()
     
@@ -60,7 +60,7 @@ def test_parsefail3():
     
     Should correctly parse the file
     """
-    testfile3 = open("./tests/test.fasta", "r")
+    testfile3 = open("./tests/test1.fasta", "r")
     seq3 = ggsoft.process(testfile3)
     testfile3.close()
 
@@ -279,9 +279,9 @@ def test_regionfinder():
 
     eq_(rlist3, correct3, msg="regionfinder test 3 failed!")
 
-def test_validdist1():
+def test_validdist():
     """
-    test_validdist1
+    test_validdist
     
     Checks that boolean function _valid_distance returns correct values for
     given indices.
@@ -352,9 +352,9 @@ def test_scoreall():
     eq_(correct, scored, msg="scoreall test failed!")
 
 
-def test_scorecalc1():
+def test_scorecalc_4():
     """
-    test_scorecalc1
+    test_scorecalc_4
     
     Checks that scores for an overhang list are calculated correctly
     
@@ -381,9 +381,9 @@ def test_scorecalc1():
     
     eq_(newscore2, testscore2, msg="size 4 score calculation 2 failed!")
     
-def test_scorecalc2():
+def test_scorecalc_6():
     """
-    test_scorecalc2
+    test_scorecalc_6
     
     Checks that scores for an overhang list are calculated correctly
     """
