@@ -1,9 +1,30 @@
 
-GGSOFT/README
+#=======================================================================#
+# GGSOFT/README								#
+# Copyright (c) 2013 Michael Ting					#
+#									#
+# GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool #
+#=======================================================================#
 
-Copyright (c) 2013 Michael Ting
+#=======#
+# Usage #
+#=======#
 
-GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
+GGSOFT is intended for use in finding DNA overhangs to be used in 
+Golden Gate DNA Assembly methods, which utilize Type IIs restriction
+enzyme digestion. Type IIs restriction enzymes cut remotely from their
+recognition site without regards to the cutting sequence.
+
+GGSOFT explores overhang combinations for use in Golden Gate DNA
+Assembly that maximizes the distance between all overhang pairs in an
+attempt to prevent multiple overhangs from annealing in positions other
+than intended. For purposes such as a one-pot reaction, too similar
+overhangs can result in Golden Gate DNA fragments annealing together
+in the wrong positions relative to one another.
+
+#============#
+# Algorithms #
+#============#
 
 Given a user input of overhang size, determine optimal DNA overhang sequences using
 a scoring function to maximize pairwise distances between all pairwise combinations
@@ -22,7 +43,9 @@ Note that for overhangs of length greater than 4bp, computation time of the scor
 table becomes exponentially large. Computation time also increases with decreasing
 fragment size.
 
-Files included:
+#================#
+# Files included #
+#================#
 
 * ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
 	      	  overhang size, minimum fragment length, and maximum fragment length
@@ -32,13 +55,50 @@ Files included:
 * topxcombos.py	- retrieves the top X percent of scored overhang combinations
 		  specified by user input
 
-Future work:
+#============================#
+# Formatting of output files #
+#============================#
+
+----- Output from GGSOFT -----
+Output from ggsoft.py is written as such:
+
+((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
+((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
+...
+
+The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
+overhangs begin in the template sequence. The template sequence is 0-indexed.
+
+The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the overhang
+combination is 36, and the overhangs resulting from the listed indices are [TTCG, GGTA, CCAC],
+meaning we have TTCG starting at index 202, GGTA starting at index 412, and CCAC starting at 
+index 617 in our template sequence.
+
+----- Output from Top X Combos -----
+Output from topxcombos.py is written as such:
+
+Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
+261 of 1540 combinations selected
+((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
+((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
+...
+((194, 404, 610), (34, [TCAC, AAGA, TACT]))
+
+topxcombos.py extracts the top x percent of lines from a ggsoft output file.
+
+#=============#
+# Future work #
+#=============#
+
  - Speed up scoring table construction
  - Use heuristics to speed up finding overhang window region combinations
  - Use information from homology to optimize overhang locations across
    a family of related sequences
+ - Integrate topxcombos functionality into optional arguments for ggsoft.py
 
-Version History:
+#=================#
+# Version History #
+#=================#
 
 * v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
 	 overhang combinations.
