@@ -4,8 +4,6 @@
 # Unit testing file for ggsoft.py using the nose framework
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
-# Created 28 May 2013
-# v1.0 updated 5 June 2013
 #
 # Tests can be run using "$ nosetests ggsofttest.py"
 # 
@@ -26,7 +24,7 @@ def test_parsefasta():
     Ensures that the FASTA file is being read correctly using the Biopython
     package SeqIO.
     """
-    testfile1 = open("test.fasta", "r")
+    testfile1 = open("./tests/test.fasta", "r")
     seq1 = ggsoft.process(testfile1)
     
     eq_(seq1, "AAAATTTT", msg="fasta parser 2 test 1 reading incorrectly!")
@@ -40,7 +38,7 @@ def test_parsefail1():
     Ensures that the ValueError exception is correctly thrown for multiple
     FASTA sequences in the same input file.
     """
-    testfile1 = open("test2.fasta", "r")
+    testfile1 = open("./tests/test2.fasta", "r")
     seq1 = ggsoft.process(testfile1)
     testfile1.close()
 
@@ -52,7 +50,7 @@ def test_parsefail2():
     Ensures that the ValueError exception is correctly thrown for an 
     incorrectly formatted input file
     """
-    testfile2 = open("parsetestfail.fasta", "r")
+    testfile2 = open("./tests/parsetestfail.fasta", "r")
     seq2 = ggsoft.process(testfile2)
     testfile2.close()
     
@@ -62,7 +60,7 @@ def test_parsefail3():
     
     Should correctly parse the file
     """
-    testfile3 = open("test.fasta", "r")
+    testfile3 = open("./tests/test.fasta", "r")
     seq3 = ggsoft.process(testfile3)
     testfile3.close()
 
@@ -271,7 +269,7 @@ def test_regionfinder():
 
     eq_(rlist2, correct2, msg="regionfinder test 2 failed!")
     
-    testfile1 = open("P42212.fasta", "r")
+    testfile1 = open("./tests/P42212.fasta", "r")
     seq3 = ggsoft.process(testfile1)
     OHsize3 = 4
     minsize3 = 20
