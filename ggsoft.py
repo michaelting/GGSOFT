@@ -27,16 +27,17 @@ import math, itertools
 from argparse import ArgumentParser
 from Bio import SeqIO
 
-# Uses the Biopython package SeqIO to extract information from a FASTA file
+# Uses the Biopython package SeqIO to extract information from a FASTA file --
 def process(infile):
     """
     Extracts sequences from a FASTA file using the Biopython package
     SeqIO.
     
     Input:
-        infile  - A FASTA file with a single nucleotide sequence.
+        infile          - A FASTA file with a single nucleotide sequence.
     Output:
-        A string corresponding to the nucleotide sequence in the file.
+        str(record.seq) - A string corresponding to the nucleotide sequence
+                          in the file.
     Note:
         - For the purposes of this program, we want to restrict the number of
           sequences in the input file to ONE (1) sequence. 
@@ -59,12 +60,12 @@ def buildtable(size):
     nucleotide sequences NNN... of length "size".
     
     Input:
-        size    - The length of the overhang in bp
+        size                - The length of the overhang in bp
     Output:
         size_score_table    - A matrix of pairwise scores for overhangs of
                               length "size".
     Notes:
-        This method is very slow: O(4^n). As we increase the overhang length to
+        This method is very slow: O((4^n)^2. As we increase the overhang length to
         be greater than 4, the computation becomes extremely slow - 49s for
         a size 6 overhang. We may want to look into rewriting the code to
         speed up this computation, since the matrix is a mirror-image along
@@ -153,7 +154,7 @@ def getsubstrings(seq, size):
                   overhangs to use for DNA assembly
         size    - The length in bp of the overhang
     Output:
-        A dictionary mapping sequence index --> overhang substring
+        subdict - A dictionary mapping sequence index --> overhang substring
         
     seq = "ATGCGTA" with overhang size 4 would yield:
     dict = {0:'ATGC',
@@ -289,18 +290,18 @@ def scoreall(checked, OHsize, subdict):
     score, sorted by highest score to lowest score
     
     Input:
-        checked - A checked/purged list of overhang index combinations that
-                  has been verified to be within a valid distance
-        OHsize  - Length of the overhangs in bp
-        subdict - A dictionary of (k,v) pairs with keys corresponding to 
-                  indices of bases in the sequence and values corresponding to
-                  overhang substrings of length OHsize
+        checked     - A checked/purged list of overhang index combinations that
+                      has been verified to be within a valid distance
+        OHsize      - Length of the overhangs in bp
+        subdict     - A dictionary of (k,v) pairs with keys corresponding to 
+                      indices of bases in the sequence and values corresponding to
+                      overhang substrings of length OHsize
     Output:
-        sorteddict - A dictionary of (k,v) pairs with keys corresponding to
-                     index sets and values corresponding to tuples of the
-                     overhang set score and the bases in the overhangs 
-                     established by the indices.
-                     {(206, 413, 620): (17, ['GTTA', 'GTAA', 'CTCA'])}
+        sorteddict  - A dictionary of (k,v) pairs with keys corresponding to
+                      index sets and values corresponding to tuples of the
+                      overhang set score and the bases in the overhangs 
+                      established by the indices.
+                      {(206, 413, 620): (17, ['GTTA', 'GTAA', 'CTCA'])}
     """
        
     # create scoring table for overhangs

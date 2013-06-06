@@ -3,7 +3,7 @@ GGSOFT/README
 
 Copyright (c) 2013 Michael Ting
 
-GGSOFT (Golden Gate DNA Assembly Size-specified Overhang Finding Tool)
+GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
 
 Given a user input of overhang size, determine optimal DNA overhang sequences using
 a scoring function to maximize pairwise distances between all pairwise combinations
@@ -24,12 +24,25 @@ fragment size.
 
 Files included:
 
-* ggsoft.py - runs the GGSOFT program given an input sequence, output file name,
-	      overhang size, minimum fragment length, and maximum fragment length
+* ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
+	      	  overhang size, minimum fragment length, and maximum fragment length
+
 * ggsofttest.py - nose testing framework for ggsoft.py
+
+* topxcombos.py	- retrieves the top X percent of scored overhang combinations
+		  specified by user input
 
 Future work:
  - Speed up scoring table construction
  - Use heuristics to speed up finding overhang window region combinations
  - Use information from homology to optimize overhang locations across
    a family of related sequences
+
+Version History:
+
+* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
+	 overhang combinations.
+
+* v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
+	 construction of the scoring table and implementation of a heuristic to reduce
+	 memory usage during computation of overhang combinations.
