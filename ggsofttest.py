@@ -8,10 +8,9 @@
 # Tests can be run using "$ nosetests ggsofttest.py"
 # 
 # Options:
-#   -v : verbose, displays test names
-#   -x : stop the test at the first failure
+#   -v          : verbose, displays test names
+#   -x          : stop the test at the first failure
 #   --nocapture : prevent nose from capturing stdout output
-#
 #==============================================================================
 
 import ggsoft

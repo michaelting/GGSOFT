@@ -5,7 +5,7 @@
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
 # Created 28 May 2013
-# v1.0 updated 5 June 2013
+# v1.1 updated 6 June 2013
 #
 # Finds top-scoring overhangs for type IIs restriction enzyme digestion 
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
@@ -34,10 +34,10 @@ def process(infile):
     SeqIO.
     
     Input:
-        infile          - A FASTA file with a single nucleotide sequence.
+        infile  - A FASTA file with a single nucleotide sequence.
     Output:
-        str(record.seq) - A string corresponding to the nucleotide sequence
-                          in the file.
+        seq     - A string corresponding to the nucleotide sequence
+                  in the file.
     Note:
         - For the purposes of this program, we want to restrict the number of
           sequences in the input file to ONE (1) sequence. 
@@ -46,11 +46,12 @@ def process(infile):
           require parsing a FASTA file with multiple sequences.
     """
     try:
-        record = SeqIO.read(infile, "fasta")
+        record  = SeqIO.read(infile, "fasta")
+        seq     = str(record.seq)
     except ValueError:
         raise ValueError("Invalid file format! Please use a FASTA file with one sequence.")
     
-    return str(record.seq)
+    return seq
 
 # Construct the scoring table ------------------------------------------------
 def buildtable(size):

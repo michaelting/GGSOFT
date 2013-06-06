@@ -2,6 +2,7 @@
 #=======================================================================#
 # GGSOFT/README								#
 # Copyright (c) 2013 Michael Ting					#
+# https://github.com/michaelting					#
 #									#
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool #
 #=======================================================================#
@@ -44,7 +45,7 @@ table becomes exponentially large. Computation time also increases with decreasi
 fragment size.
 
 #================#
-# Files included #
+# Files Included #
 #================#
 
 * ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
@@ -56,7 +57,7 @@ fragment size.
 		  specified by user input
 
 #============================#
-# Formatting of output files #
+# Formatting of Output Files #
 #============================#
 
 ----- Output from GGSOFT -----
@@ -65,6 +66,7 @@ Output from ggsoft.py is written as such:
 ((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
 ((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
 ...
+((204, 414, 622), (8, [CGGT, TAAC, CAAT]))
 
 The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
 overhangs begin in the template sequence. The template sequence is 0-indexed.
@@ -87,7 +89,7 @@ Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
 topxcombos.py extracts the top x percent of lines from a ggsoft output file.
 
 #=============#
-# Future work #
+# Future Work #
 #=============#
 
  - Speed up scoring table construction
@@ -101,7 +103,8 @@ topxcombos.py extracts the top x percent of lines from a ggsoft output file.
 #=================#
 
 * v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
-	 overhang combinations.
+	 overhang combinations. Minor modifications to ggsoft.py in process() and 
+	 main(), swapping optparse out for argparse.
 
 * v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
 	 construction of the scoring table and implementation of a heuristic to reduce
