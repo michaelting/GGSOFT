@@ -66,7 +66,7 @@ def buildtable(size):
         size_score_table    - A matrix of pairwise scores for overhangs of
                               length "size".
     Notes:
-        This method is very slow: O((4^n)^2. As we increase the overhang length to
+        This method is very slow: O((4^n)^2). As we increase the overhang length to
         be greater than 4, the computation becomes extremely slow - 49s for
         a size 6 overhang. We may want to look into rewriting the code to
         speed up this computation, since the matrix is a mirror-image along
@@ -125,7 +125,9 @@ def buildtable(size):
         
     # construct the overhang table--------------------------------------------
     # --> could optimize this to reduce the number of computations by half by
-    # copying the table over in a mirror-image        
+    # copying the table over in a mirror-image, or dividing up larger pieces 
+    # into smaller ones and adding up pre-computed scores for those smaller
+    # pieces, e.g. a size 8 overhang can be split into two overhangs of size 4
         
     # first overhang sequence for comparison
     size_score_table = {}
@@ -381,11 +383,11 @@ def main():
     # read command-line arguments
     parser = ArgumentParser(description="Set parameters for overhang calculation")
     
-    parser.add_argument("infile", help="input sequence FASTA file")
-    parser.add_argument("outfile", help="name of output file for scored overhangs")
-    parser.add_argument("minsize", help="minimum fragment size in bp")
-    parser.add_argument("maxsize", help="maximum fragment size in bp")
-    parser.add_argument("OHsize", help="overhang size in bp")
+    parser.add_argument("infile", metavar="in", help="input sequence FASTA file")
+    parser.add_argument("outfile", metavar="out", help="name of output file for scored overhangs")
+    parser.add_argument("minsize", type=int, metavar="m", help="minimum fragment size in bp")
+    parser.add_argument("maxsize", type=int, metavar="n", help="maximum fragment size in bp")
+    parser.add_argument("OHsize", type=int, metavar="k", help="overhang size in bp")
 
     args = parser.parse_args()
     
