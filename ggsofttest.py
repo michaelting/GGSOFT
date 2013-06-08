@@ -80,11 +80,16 @@ def test_scoretable_size1():
     C   4   1   4   0
     """
     
-    TV = 4  # transversion
+    TV = 8  # transversion
     TS = 1  # transition
-    ID = 0  # identical
+    ID = -10  # identical
+    R = 3 # base value for ID affine extension penalty
     
     size1table = ggsoft.buildtable(1)
+    
+    import pprint
+    print ""
+    pprint.pprint(size1table)
     
     eq_(size1table['A']['A'], ID, msg="A-A table 1 test failed!")
     eq_(size1table['A']['T'], TV, msg="A-T table 1 test failed!")

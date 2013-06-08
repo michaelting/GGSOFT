@@ -84,9 +84,9 @@ def buildtable(size):
     
     """
     
-    TV = 4  # transversion
+    TV = 8  # transversion
     TS = 1  # transition
-    ID = 0  # identical
+    ID = -10  # identical
     
     # pairwise scores for bases in the same position
     # 1st base --> 2nd base; 1st base is original
@@ -138,10 +138,18 @@ def buildtable(size):
             # sum the scores from pairwise comparisons of bases
             # use one-base scoring table to calculate sequence scores
             pairscore = 0
+            identical = 0 # number of identical bases in a row (affine penalty)
             # go base by base down the overhangs, which should be the same size
             for index in range(size):
                 pairstring = first[index] + second[index]
                 pairscore += score_dict[pairstring]
+                # assign an affine penalty for identical bases in a row
+                if score_dict[pairstring] == ID:
+                    identical += 1
+                    pairscore += (-1)*int(math.pow(3, identical-1))
+                # reset the penalty
+                else:
+                    identical = 0
             subtable[second] = pairscore
         size_score_table[first] = subtable
 
@@ -396,6 +404,9 @@ def main():
     minsize = int(args.minsize)
     maxsize = int(args.maxsize)
     OHsize = int(args.OHsize)
+    
+    if minsize > maxsize:
+        raise IOError("Invalid fragment size indices! m < n is required.")
 
     template = open(infile)
     newfile = open(outfile, 'w')

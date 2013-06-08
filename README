@@ -104,7 +104,8 @@ topxcombos.py extracts the top x percent of lines from a ggsoft output file.
 
 * v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
 	 overhang combinations. Minor modifications to ggsoft.py in process() and 
-	 main(), swapping optparse out for argparse.
+	 main(), swapping optparse out for argparse. Overhang scoring includes an exponential
+	 ID extension penalty for overhang pairs.
 
 * v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
 	 construction of the scoring table and implementation of a heuristic to reduce
