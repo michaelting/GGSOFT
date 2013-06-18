@@ -11,12 +11,12 @@
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
 #   between all overhang pairs using a scoring function which currently
 #   uses base substitution (transversion, transition, identical) to correspond
-#   to distance, with TV:4, TS:1, ID:0. 
+#   to distance, with TV:8, TS:1, ID:-10. 
 #
 # Notes:
-#   - Current version uses an oversimplified scoring function. Future versions
-#     will explore different scoring functions for higher resolution between
-#     scored overhang combinations.
+#   - Current version uses a simplified scoring function, with a penalty for
+#     extension of identical bases. Future versions will explore different 
+#     scoring functions for higher resolution between scored overhang combinations.
 #   - For small fragment sizes, computation of overhang window regions may
 #     use up memory and cause the program to fail. Further optimization 
 #     may utilize heuristics to reduce memory usage.
@@ -25,7 +25,7 @@
 
 import math, itertools
 from argparse import ArgumentParser
-from Bio import SeqIO
+from Bio import SeqIO, Restriction
 
 # Uses the Biopython package SeqIO to extract information from a FASTA file --
 def process(infile):
@@ -87,6 +87,8 @@ def buildtable(size):
     TV = 8  # transversion
     TS = 1  # transition
     ID = -10  # identical
+    IDSTART = 0
+    PENALTY_BASE = 3
     
     # pairwise scores for bases in the same position
     # 1st base --> 2nd base; 1st base is original
@@ -138,18 +140,19 @@ def buildtable(size):
             # sum the scores from pairwise comparisons of bases
             # use one-base scoring table to calculate sequence scores
             pairscore = 0
-            identical = 0 # number of identical bases in a row (affine penalty)
+            identical = IDSTART # number of identical bases in a row (affine penalty)
             # go base by base down the overhangs, which should be the same size
             for index in range(size):
                 pairstring = first[index] + second[index]
                 pairscore += score_dict[pairstring]
-                # assign an affine penalty for identical bases in a row
+                # assign an identical base exponential extension penalty
                 if score_dict[pairstring] == ID:
                     identical += 1
-                    pairscore += (-1)*int(math.pow(3, identical-1))
+                    if identical > 1:
+                        pairscore += (-1)*int(math.pow(PENALTY_BASE, identical-1))
                 # reset the penalty
                 else:
-                    identical = 0
+                    identical = IDSTART
             subtable[second] = pairscore
         size_score_table[first] = subtable
 

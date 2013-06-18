@@ -83,13 +83,8 @@ def test_scoretable_size1():
     TV = 8  # transversion
     TS = 1  # transition
     ID = -10  # identical
-    R = 3 # base value for ID affine extension penalty
     
     size1table = ggsoft.buildtable(1)
-    
-    import pprint
-    print ""
-    pprint.pprint(size1table)
     
     eq_(size1table['A']['A'], ID, msg="A-A table 1 test failed!")
     eq_(size1table['A']['T'], TV, msg="A-T table 1 test failed!")
@@ -137,14 +132,15 @@ def test_scoretable_size2():
     CC  8   5   8   4   5   2   5   1   8   5   8   4   4   1   4   0
     """
     
-    TV = 4  # transversion
-    TS = 1  # transition
-    ID = 0  # identical
+    TV = 8      # transversion
+    TS = 1      # transition
+    ID = -10    # identical
+    P2 = -3     # penalty for length 2 identical string
     
     size2table = ggsoft.buildtable(2)
     
-    eq_(size2table['AA']['AA'], ID+ID, msg="AA-AA table 2 test failed!")
-    eq_(size2table['GT']['GT'], ID+ID, msg="GT-GT table 2 test failed!")
+    eq_(size2table['AA']['AA'], ID+ID+P2, msg="AA-AA table 2 test failed!")
+    eq_(size2table['GT']['GT'], ID+ID+P2, msg="GT-GT table 2 test failed!")
     eq_(size2table['AG']['GA'], TS+TS, msg="AG-GA table 2 test failed!")
     eq_(size2table['AT']['CC'], TV+TS, msg="AT-CC table 2 test failed!")
     eq_(size2table['CC']['TG'], TS+TV, msg="CC-TG table 2 test failed!")
@@ -170,14 +166,18 @@ def test_scoretable_size4():
     ...
     """
     
-    TV = 4  # transversion
-    TS = 1  # transition
-    ID = 0  # identical
+    TV = 8      # transversion
+    TS = 1      # transition
+    ID = -10    # identical
+    # ID penalties accumulate as the sum of powers
+    P2 = -3         # penalty for length 2 identical string
+    P3 = -3-9       # penalty for length 3 identical string
+    P4 = -3-9-27    # penalty for length 4 identical string
     
     size4table = ggsoft.buildtable(4)
     
-    eq_(size4table['AAAA']['AAAA'], ID+ID+ID+ID, msg="AAAA-AAAA table 4 test failed!")
-    eq_(size4table['CTGA']['CTGA'], ID+ID+ID+ID, msg="CTGA-CTGA table 4 test failed!")
+    eq_(size4table['AAAA']['AAAA'], ID+ID+ID+ID+P4, msg="AAAA-AAAA table 4 test failed!")
+    eq_(size4table['CTGA']['CTGA'], ID+ID+ID+ID+P4, msg="CTGA-CTGA table 4 test failed!")
     eq_(size4table['AATT']['TTAA'], TV+TV+TV+TV, msg="AATT-TTAA table 4 test failed!")
     eq_(size4table['GCGC']['ACAC'], TS+ID+TS+ID, msg="GCGC-ACAC table 4 test failed!")
     eq_(size4table['TCGA']['TAAT'], ID+TV+TS+TV, msg="TCGA-TAAT table 4 test failed!")
@@ -186,7 +186,9 @@ def test_scoretable_size4():
     eq_(size4table['TACT']['AAAG'], TV+ID+TV+TV, msg="TACT-AAAG table 4 test failed!")
     eq_(size4table['GGCA']['TGAC'], TV+ID+TV+TV, msg="GGCA-TGAC table 4 test failed!")
     eq_(size4table['AGCA']['GAAT'], TS+TS+TV+TV, msg="AGCA-GAAT table 4 test failed!")
-    eq_(size4table['TTGG']['TTGG'], ID+ID+ID+ID, msg="TTGG-TTGG table 4 test failed!")
+    eq_(size4table['TTGG']['TTGG'], ID+ID+ID+ID+P4, msg="TTGG-TTGG table 4 test failed!")
+    eq_(size4table['GACT']['GACG'], ID+ID+ID+TV+P3, msg="GACT-GACG table 4 test failed!")
+    eq_(size4table['TTAT']['GTAC'], TV+ID+ID+TS+P2, msg="TTAT-GTAC table 4 test failed!")
     
 def test_seqsubstr1():
     """
@@ -350,8 +352,8 @@ def test_scoreall():
     maxsize = 6
     validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
     subdict = ggsoft.getsubstrings(seq, OHsize)
-    scored = ggsoft.scoreall(validcombos, OHsize, subdict)
-    correct = [((4, 8, 14), (36, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (36, ['TTTT', 'GGGC', 'CCAA'])), ((4, 10, 14), (36, ['TTTT', 'GGCC', 'CCAA'])), ((5, 9, 14), (36, ['TTTG', 'GGGC', 'CCAA'])), ((5, 10, 14), (36, ['TTTG', 'GGCC', 'CCAA'])), ((3, 8, 14), (36, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (36, ['ATTT', 'GGGC', 'CCAA'])), ((2, 8, 14), (36, ['AATT', 'GGGG', 'CCAA'])), ((5, 8, 14), (29, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (29, ['TTTG', 'GCCC', 'CCAA']))]
+    scored = ggsoft.scoreall(validcombos, OHsize, subdict)   
+    correct =  [((4, 8, 14), (68, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (68, ['TTTT', 'GGGC', 'CCAA'])), ((4, 10, 14), (68, ['TTTT', 'GGCC', 'CCAA'])), ((5, 9, 14), (68, ['TTTG', 'GGGC', 'CCAA'])), ((5, 10, 14), (68, ['TTTG', 'GGCC', 'CCAA'])), ((3, 8, 14), (68, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (68, ['ATTT', 'GGGC', 'CCAA'])), ((2, 8, 14), (68, ['AATT', 'GGGG', 'CCAA'])), ((5, 8, 14), (43, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (43, ['TTTG', 'GCCC', 'CCAA']))]
     
     eq_(correct, scored, msg="scoreall test failed!")
 
@@ -374,13 +376,15 @@ def test_scorecalc_4():
     size4table = ggsoft.buildtable(size)    
     
     OHlist1 = ['AGAT','GTCT','TACG']    
-    testscore1 = 34
+    #testscore1 = 34
+    testscore1 = 46
     newscore1 = ggsoft.calc_score(OHlist1,size4table)
     
     eq_(newscore1, testscore1, msg="size 4 score calculation 1 failed!")
     
     OHlist2 = ['AAAA','GATC','GGAT']
-    testscore2 = 21
+    #testscore2 = 21
+    testscore2 = 7
     newscore2 = ggsoft.calc_score(OHlist2,size4table)
     
     eq_(newscore2, testscore2, msg="size 4 score calculation 2 failed!")
@@ -392,6 +396,10 @@ def test_scorecalc_6():
     Checks that scores for an overhang list are calculated correctly
     """
     
+    TV = 8      # transversion
+    TS = 1      # transition
+    ID = -10    # identical    
+    
     size = 6
     size6table = ggsoft.buildtable(size)
     
@@ -400,7 +408,8 @@ def test_scorecalc_6():
     # TTTTTT-GGGGGG: TV*6 = 24
     # total score = 54
     OHlist1 = ['AAAAAA','TTTTTT','GGGGGG']
-    testscore1 = 54
+    #testscore1 = 54
+    testscore1 = TV*6 + TS*6 + TV*6
     newscore1 = ggsoft.calc_score(OHlist1,size6table)
     
     eq_(newscore1, testscore1, msg="size 6 score calculation 1 failed!")
@@ -413,7 +422,8 @@ def test_scorecalc_6():
     # ACACAC-TCTAGT: TV+ID+TV+TV+TS+TS = 0+2+12 = 14
     # total score = 91
     OHlist2 = ['AAAAAA','TTTTTT','ACACAC','TCTAGT']
-    testscore2 = 91
+    #testscore2 = 91
+    testscore2 = TV*6 + (ID*3+TV*3) + (ID+TS+TV*4) + (TS*3+TV*3) + (ID*3+TS+TV*2) + (ID+TS*2+TV*3)
     newscore2 = ggsoft.calc_score(OHlist2,size6table)
     
     eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")

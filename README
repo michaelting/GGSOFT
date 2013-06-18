@@ -14,7 +14,8 @@
 GGSOFT is intended for use in finding DNA overhangs to be used in 
 Golden Gate DNA Assembly methods, which utilize Type IIs restriction
 enzyme digestion. Type IIs restriction enzymes cut remotely from their
-recognition site without regards to the cutting sequence.
+recognition site without regards to the cutting sequence. The length of
+overhangs produced through RE digestion varies from enzyme to enzyme.
 
 GGSOFT explores overhang combinations for use in Golden Gate DNA
 Assembly that maximizes the distance between all overhang pairs in an
@@ -23,6 +24,32 @@ than intended. For purposes such as a one-pot reaction, too similar
 overhangs can result in Golden Gate DNA fragments annealing together
 in the wrong positions relative to one another.
 
+#=================#
+# Version History #
+#=================#
+
+* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
+	 overhang combinations. Minor modifications to ggsoft.py in process() and 
+	 main(), swapping optparse out for argparse. Overhang scoring includes an exponential
+	 ID extension penalty for overhang pairs.
+
+* v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
+	 construction of the scoring table and implementation of a heuristic to reduce
+	 memory usage during computation of overhang combinations.
+
+#=============#
+# Future Work #
+#=============#
+
+ - Account for palindromic overhangs (homodimerization) and filter them out or
+   assign a very bad score (current version only accounts for heterodimerization)
+ - Speed up scoring table construction
+ - Integrate topxcombos functionality into optional arguments for ggsoft.py
+ - Primer generation functionality in addition to overhang finding? 
+ - Use heuristics to speed up finding overhang window region combinations
+ - Use information from homology to optimize overhang locations across
+   a family of related sequences
+	 
 #============#
 # Algorithms #
 #============#
@@ -42,7 +69,7 @@ For an overhang of size 5, a size 1024*1024 table is calculated.
 
 Note that for overhangs of length greater than 4bp, computation time of the scoring
 table becomes exponentially large. Computation time also increases with decreasing
-fragment size.
+fragment size (more fragments, more overhang combinations).
 
 #================#
 # Files Included #
@@ -69,7 +96,12 @@ Output from ggsoft.py is written as such:
 ((204, 414, 622), (8, [CGGT, TAAC, CAAT]))
 
 The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
-overhangs begin in the template sequence. The template sequence is 0-indexed.
+overhangs begin in the template sequence. 
+
+*******************************************************************************************
+NOTE: In the output data, The template sequence is 0-INDEXED, while many other DNA software
+      programs use 1-INDEXED notation.
+*******************************************************************************************
 
 The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the overhang
 combination is 36, and the overhangs resulting from the listed indices are [TTCG, GGTA, CCAC],
@@ -87,26 +119,3 @@ Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
 ((194, 404, 610), (34, [TCAC, AAGA, TACT]))
 
 topxcombos.py extracts the top x percent of lines from a ggsoft output file.
-
-#=============#
-# Future Work #
-#=============#
-
- - Speed up scoring table construction
- - Use heuristics to speed up finding overhang window region combinations
- - Use information from homology to optimize overhang locations across
-   a family of related sequences
- - Integrate topxcombos functionality into optional arguments for ggsoft.py
-
-#=================#
-# Version History #
-#=================#
-
-* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
-	 overhang combinations. Minor modifications to ggsoft.py in process() and 
-	 main(), swapping optparse out for argparse. Overhang scoring includes an exponential
-	 ID extension penalty for overhang pairs.
-
-* v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
-	 construction of the scoring table and implementation of a heuristic to reduce
-	 memory usage during computation of overhang combinations.
