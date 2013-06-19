@@ -28,21 +28,25 @@ in the wrong positions relative to one another.
 # Version History #
 #=================#
 
-* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent of scored
-	 overhang combinations. Minor modifications to ggsoft.py in process() and 
-	 main(), swapping optparse out for argparse. Overhang scoring includes an exponential
-	 ID extension penalty for overhang pairs.
+* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent
+	 of scored overhang combinations. Minor modifications to ggsoft.py
+	 in process() and main(), swapping optparse out for argparse. 
+	 Overhang scoring includes an exponential ID extension penalty for
+	 overhang pairs. Overhang combinations containing palindromic
+	 overhangs (e.g. 'GATC') are excluded.
 
-* v1.0 - Initial version of GGSOFT. Future work includes reducing computation time of
-	 construction of the scoring table and implementation of a heuristic to reduce
-	 memory usage during computation of overhang combinations.
+* v1.0 - Initial version of GGSOFT. Future work includes reducing computation 
+	 time of construction of the scoring table and implementation of 
+	 a heuristic to reduce memory usage during computation of overhang 
+	 combinations.
 
 #=============#
 # Future Work #
 #=============#
 
- - Account for palindromic overhangs (homodimerization) and filter them out or
-   assign a very bad score (current version only accounts for heterodimerization)
+ - More specific handling of palindromic overhangs (homodimerization). Current
+   handling of palindromic overhangs results in combinations with those
+   overhangs being excluded completely from final results.
  - Speed up scoring table construction
  - Integrate topxcombos functionality into optional arguments for ggsoft.py
  - Primer generation functionality in addition to overhang finding? 
@@ -87,7 +91,9 @@ fragment size (more fragments, more overhang combinations).
 # Formatting of Output Files #
 #============================#
 
------ Output from GGSOFT -----
+==============================
+===== Output from GGSOFT =====
+==============================
 Output from ggsoft.py is written as such:
 
 ((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
@@ -98,17 +104,19 @@ Output from ggsoft.py is written as such:
 The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
 overhangs begin in the template sequence. 
 
-*******************************************************************************************
-NOTE: In the output data, The template sequence is 0-INDEXED, while many other DNA software
-      programs use 1-INDEXED notation.
-*******************************************************************************************
+**********************************************************************************
+NOTE: In the output data, The template sequence is 0-INDEXED, while many other DNA
+      software programs use 1-INDEXED notation.
+**********************************************************************************
 
-The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the overhang
-combination is 36, and the overhangs resulting from the listed indices are [TTCG, GGTA, CCAC],
-meaning we have TTCG starting at index 202, GGTA starting at index 412, and CCAC starting at 
-index 617 in our template sequence.
+The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the 
+overhang combination is 36, and the overhangs resulting from the listed indices 
+are [TTCG, GGTA, CCAC], meaning we have TTCG starting at index 202, GGTA starting 
+at index 412, and CCAC starting at index 617 in our template sequence.
 
------ Output from Top X Combos -----
+====================================
+===== Output from Top X Combos =====
+====================================
 Output from topxcombos.py is written as such:
 
 Top 17 percent of combinations from ./tests/testggsoft_P42212.txt

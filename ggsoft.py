@@ -25,7 +25,7 @@
 
 import math, itertools
 from argparse import ArgumentParser
-from Bio import SeqIO, Restriction
+from Bio import Seq, SeqIO
 
 # Uses the Biopython package SeqIO to extract information from a FASTA file --
 def process(infile):
@@ -229,7 +229,7 @@ def find_regions(seq, OHsize, minsize, maxsize):
     return regionlist
 
 # find all valid overhang combinations ---------------------------------------
-def find_combos(seq, OHsize, minsize, maxsize):
+def find_combos(sequen, OHsize, minsize, maxsize):
     """
     Use sequence indices to pull overhang substrings from substrs and produce
     a list of lists of valid overhang combinations
@@ -245,7 +245,7 @@ def find_combos(seq, OHsize, minsize, maxsize):
     """
 
     # divide into regions
-    regionlist = find_regions(seq, OHsize, minsize, maxsize)  
+    regionlist = find_regions(sequen, OHsize, minsize, maxsize)  
     
     # find all combinations
     combolist = list(itertools.product(*regionlist))
@@ -262,6 +262,14 @@ def find_combos(seq, OHsize, minsize, maxsize):
             valid = _valid_distance(combo[index], combo[index+1], minsize, maxsize)
             if not valid:
                 keep = False
+        # exclude combos with palindromic overhangs
+        for OHindex in combo:
+            overhang = sequen[OHindex:OHindex+OHsize]
+            rc = Seq.reverse_complement(overhang)
+            # if any overhang is palindromic (self-dimers), don't use the combo
+            if overhang == rc:
+                keep = False
+                break
         if keep:
             checked.append(combo)
         
@@ -375,7 +383,7 @@ def calc_score(OHlist, scoretable):
     
     for first in range(len(OHlist)):
         
-        startsecond = first+1
+        startsecond = first+1 # don't score against itself
         seq1 = OHlist[first]
         
         # upper half of matrix only

@@ -336,7 +336,8 @@ def test_combofinder():
     minsize = 2
     maxsize = 6
     validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
-    correct = [(2, 8, 14), (3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (4, 10, 14), (5, 8, 14), (5, 9, 14), (5, 10, 14), (5, 11, 14)]
+
+    correct = [(3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (5, 8, 14), (5, 9, 14), (5, 11, 14)]
 
     eq_(validcombos, correct, msg="combofinder test failed!")
 
@@ -352,11 +353,10 @@ def test_scoreall():
     maxsize = 6
     validcombos = ggsoft.find_combos(seq, OHsize, minsize, maxsize)
     subdict = ggsoft.getsubstrings(seq, OHsize)
-    scored = ggsoft.scoreall(validcombos, OHsize, subdict)   
-    correct =  [((4, 8, 14), (68, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (68, ['TTTT', 'GGGC', 'CCAA'])), ((4, 10, 14), (68, ['TTTT', 'GGCC', 'CCAA'])), ((5, 9, 14), (68, ['TTTG', 'GGGC', 'CCAA'])), ((5, 10, 14), (68, ['TTTG', 'GGCC', 'CCAA'])), ((3, 8, 14), (68, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (68, ['ATTT', 'GGGC', 'CCAA'])), ((2, 8, 14), (68, ['AATT', 'GGGG', 'CCAA'])), ((5, 8, 14), (43, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (43, ['TTTG', 'GCCC', 'CCAA']))]
+    scored = ggsoft.scoreall(validcombos, OHsize, subdict)    
+    correct = [((4, 8, 14), (68, ['TTTT', 'GGGG', 'CCAA'])), ((4, 9, 14), (68, ['TTTT', 'GGGC', 'CCAA'])), ((5, 9, 14), (68, ['TTTG', 'GGGC', 'CCAA'])), ((3, 8, 14), (68, ['ATTT', 'GGGG', 'CCAA'])), ((3, 9, 14), (68, ['ATTT', 'GGGC', 'CCAA'])), ((5, 8, 14), (43, ['TTTG', 'GGGG', 'CCAA'])), ((5, 11, 14), (43, ['TTTG', 'GCCC', 'CCAA']))]    
     
     eq_(correct, scored, msg="scoreall test failed!")
-
 
 def test_scorecalc_4():
     """
@@ -388,7 +388,7 @@ def test_scorecalc_4():
     newscore2 = ggsoft.calc_score(OHlist2,size4table)
     
     eq_(newscore2, testscore2, msg="size 4 score calculation 2 failed!")
-    
+
 def test_scorecalc_6():
     """
     test_scorecalc_6
