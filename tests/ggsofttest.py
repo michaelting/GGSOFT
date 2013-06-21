@@ -13,6 +13,9 @@
 #   --nocapture : prevent nose from capturing stdout output
 #==============================================================================
 
+import sys
+sys.path.append("/home/Michael/GGSOFT")
+
 import ggsoft
 from nose.tools import ok_, eq_, raises
 
@@ -23,7 +26,7 @@ def test_parsefasta():
     Ensures that the FASTA file is being read correctly using the Biopython
     package SeqIO.
     """
-    testfile1 = open("./tests/test1.fasta", "r")
+    testfile1 = open("./test1.fasta", "r")
     seq1 = ggsoft.process(testfile1)
     
     eq_(seq1, "AAAATTTT", msg="fasta parser 2 test 1 reading incorrectly!")
@@ -37,7 +40,7 @@ def test_parsefail1():
     Ensures that the ValueError exception is correctly thrown for multiple
     FASTA sequences in the same input file.
     """
-    testfile1 = open("./tests/test2.fasta", "r")
+    testfile1 = open("./test2.fasta", "r")
     seq1 = ggsoft.process(testfile1)
     testfile1.close()
 
@@ -49,7 +52,7 @@ def test_parsefail2():
     Ensures that the ValueError exception is correctly thrown for an 
     incorrectly formatted input file
     """
-    testfile2 = open("./tests/test_parsefail.fasta", "r")
+    testfile2 = open("./test_parsefail.fasta", "r")
     seq2 = ggsoft.process(testfile2)
     testfile2.close()
     
@@ -59,7 +62,7 @@ def test_parsefail3():
     
     Should correctly parse the file
     """
-    testfile3 = open("./tests/test1.fasta", "r")
+    testfile3 = open("./test1.fasta", "r")
     seq3 = ggsoft.process(testfile3)
     testfile3.close()
 
@@ -270,18 +273,20 @@ def test_regionfinder():
     OHsize2 = 4
     minsize2 = 2
     maxsize2 = 6
-    correct2 = [[2,3,4,5],[8,9,10,11],[14]]
     rlist2 = ggsoft.find_regions(seq2, OHsize2, minsize2, maxsize2)
+    
+    correct2 = [[2,3,4,5],[8,9,10,11],[14]]
 
     eq_(rlist2, correct2, msg="regionfinder test 2 failed!")
     
-    testfile1 = open("./tests/P42212.fasta", "r")
+    testfile1 = open("./P42212dna.fasta", "r")
     seq3 = ggsoft.process(testfile1)
     OHsize3 = 4
     minsize3 = 20
     maxsize3 = 30
-    correct3 = [[20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [200, 201, 202, 203, 204, 205, 206, 207, 208, 209], [230, 231, 232]]
     rlist3 = ggsoft.find_regions(seq3, OHsize3, minsize3, maxsize3)
+    
+    correct3 = [[20, 21, 22, 23, 24, 25, 26, 27, 28, 29], [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], [80, 81, 82, 83, 84, 85, 86, 87, 88, 89], [110, 111, 112, 113, 114, 115, 116, 117, 118, 119], [140, 141, 142, 143, 144, 145, 146, 147, 148, 149], [170, 171, 172, 173, 174, 175, 176, 177, 178, 179], [200, 201, 202, 203, 204, 205, 206, 207, 208, 209], [230, 231, 232, 233, 234, 235, 236, 237, 238, 239], [260, 261, 262, 263, 264, 265, 266, 267, 268, 269], [290, 291, 292, 293, 294, 295, 296, 297, 298, 299], [320, 321, 322, 323, 324, 325, 326, 327, 328, 329], [350, 351, 352, 353, 354, 355, 356, 357, 358, 359], [380, 381, 382, 383, 384, 385, 386, 387, 388, 389], [410, 411, 412, 413, 414, 415, 416, 417, 418, 419], [440, 441, 442, 443, 444, 445, 446, 447, 448, 449], [470, 471, 472, 473, 474, 475, 476, 477, 478, 479], [500, 501, 502, 503, 504, 505, 506, 507, 508, 509], [530, 531, 532, 533, 534, 535, 536, 537, 538, 539], [560, 561, 562, 563, 564, 565, 566, 567, 568, 569], [590, 591, 592, 593, 594, 595, 596, 597, 598, 599], [620, 621, 622, 623, 624, 625, 626, 627, 628, 629], [650, 651, 652, 653, 654, 655, 656, 657, 658, 659], [680, 681, 682, 683, 684, 685, 686, 687, 688, 689], [710, 711, 712, 713, 714, 715, 716, 717, 718, 719]]
 
     eq_(rlist3, correct3, msg="regionfinder test 3 failed!")
 

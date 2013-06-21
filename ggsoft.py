@@ -11,11 +11,12 @@
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
 #   between all overhang pairs using a scoring function which currently
 #   uses base substitution (transversion, transition, identical) to correspond
-#   to distance, with TV:8, TS:1, ID:-10. 
+#   to distance, with TV:8, TS:1, ID:-10. Identical base extension results
+#   in an exponential penalty of base 3.
 #
 # Notes:
 #   - Current version uses a simplified scoring function, with a penalty for
-#     extension of identical bases. Future versions will explore different 
+#     extension of identical base strings. Future versions will explore different 
 #     scoring functions for higher resolution between scored overhang combinations.
 #   - For small fragment sizes, computation of overhang window regions may
 #     use up memory and cause the program to fail. Further optimization 
@@ -410,6 +411,8 @@ def main():
     parser.add_argument("-p","--percent", nargs=2, dest="topxtuple", 
                         metavar=("percent", "topxfile"), 
                         help="top x percent combos to retain, name of filtered output file")
+    parser.add_argument("-v", "--verbose", action="store_true", 
+                        help="be more verbose")
 
     args = parser.parse_args()
     
@@ -417,10 +420,7 @@ def main():
     outfile = args.outfile
     minsize = int(args.minsize)
     maxsize = int(args.maxsize)
-    OHsize = int(args.OHsize)
-    
-    percent = float(args.topxtuple[0])
-    topxfile = args.topxtuple[1] 
+    OHsize = int(args.OHsize)    
     
     if minsize > maxsize:
         raise IOError("Invalid fragment size indices! m < n is required.")
@@ -428,9 +428,15 @@ def main():
     template = open(infile)
     newfile = open(outfile, 'w')
     
+    if args.verbose:
+        print "Initializing GGSOFT..."
+    
     # parse the sequence from a FASTA file
     seq = process(template)    
     template.close()
+    
+    if args.verbose:
+        print "Finding overhang combinations..."
     
     # Find all valid overhang combinations
     combos = find_combos(seq, OHsize, minsize, maxsize)
@@ -438,8 +444,14 @@ def main():
     # Compute index-->overhang dictionary for fast access
     subdict = getsubstrings(seq, OHsize)
     
+    if args.verbose:
+        print "Scoring and sorting all valid overhang combinations..."
+    
     # Score and sort all overhang combinations
     scored_list = scoreall(combos, OHsize, subdict)
+
+    if args.verbose:
+        print "Writing output to " + outfile +"..."
 
     # Write score-sorted overhang combinations to a new file
     for scored_combo in scored_list:
@@ -452,10 +464,14 @@ def main():
     newfile.close()    
     
     # Handle optional argument for filtering out top X percent using topxcombos.py
-    if percent:
-        filteredfile = open(topxfile, 'w')
+    if args.topxtuple:
+        percent = float(args.topxtuple[0])
+        topxfile = args.topxtuple[1]
+
+        if args.verbose:
+            print "Filtering top " + str(percent) + " percent of combinations to " + topxfile        
+        
         subprocess.call("python topxcombos.py" + " " + outfile + " " + topxfile + " " + str(percent), shell=True)
-        filteredfile.close()
         
 if __name__ == "__main__":
     main()

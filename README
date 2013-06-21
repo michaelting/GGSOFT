@@ -2,14 +2,15 @@
 #=======================================================================#
 # GGSOFT/README								#
 # Copyright (c) 2013 Michael Ting					#
+# See LICENSE								#
 # https://github.com/michaelting					#
 #									#
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool #
 #=======================================================================#
 
-#=======#
-# Usage #
-#=======#
+#==============#
+# Introduction #
+#==============#
 
 GGSOFT is intended for use in finding DNA overhangs to be used in 
 Golden Gate DNA Assembly methods, which utilize Type IIs restriction
@@ -23,6 +24,63 @@ attempt to prevent multiple overhangs from annealing in positions other
 than intended. For purposes such as a one-pot reaction, too similar
 overhangs can result in Golden Gate DNA fragments annealing together
 in the wrong positions relative to one another.
+
+#=================#
+# Version History #
+#=================#
+
+* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent
+	 of scored overhang combinations. TopXCombos functionality enabled
+	 in GGSOFT command-line usage. ggsoft.process now uses Bio.SeqIO to
+	 parse FASTA files. Swapped optparse out for argparse in ggsoft.main.
+	 Overhang scoring includes an exponential ID extension penalty for
+	 overhang pairs. Overhang combinations containing palindromic
+	 overhangs (e.g. 'GATC') are excluded from final results in
+	 ggsoft.find_combos using Bio.Seq. Added option for more verbose
+	 information when running GGSOFT.
+
+* v1.0 - Initial version of GGSOFT. Future work includes reducing computation 
+	 time of construction of the scoring table and implementation of 
+	 a heuristic to reduce memory usage during computation of overhang 
+	 combinations.
+
+#================#
+# Files Included #
+#================#
+
+* ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
+	      	  overhang size, minimum fragment length, and maximum fragment length
+
+* topxcombos.py	- retrieves the top X percent of scored overhang combinations
+		  specified by user input	 
+	 
+#=============#
+# Future Work #
+#=============#
+
+ - More specific handling of palindromic overhangs (homodimerization). Current
+   handling of palindromic overhangs results in combinations with those
+   overhangs being excluded completely from final results. May also want to
+   explore user specification of whether to include palindromic overhangs or not.
+ - Speed up scoring table construction
+ - Primer generation functionality in addition to overhang finding? 
+ - Use heuristics to speed up finding overhang window region combinations
+ - Use information from homology to optimize overhang locations across
+   a family of related sequences
+	 
+#================#
+# Software Usage #
+#================#
+
+#===================#
+# External Packages #
+#===================#
+
+argparse:	Included in the Python standard library for Python >= 2.7 and >= 3.2
+		For earlier versions, argparse is provided as a separate package.
+		More information can be found at https://pypi.python.org/pypi/argparse
+
+Biopython:	Package can be found at biopython.org
 
 ========================================================
 ***To see more information about command-line arguments:
@@ -60,49 +118,43 @@ outfile:	(str) 	the name of the output file to contain the top X percent of
 			overhang combinations from the infile
 percent:	(float) the top X percent of combinations to retrieve, e.g. 23.2
 
-#================#
-# Files Included #
-#================#
+#============================#
+# Formatting of Output Files #
+#============================#
 
-* ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
-	      	  overhang size, minimum fragment length, and maximum fragment length
+===== Output from GGSOFT =====
+Output from ggsoft.py is written as such:
 
-* ggsofttest.py - nose testing framework for ggsoft.py
+((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
+((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
+...
+((204, 414, 622), (8, [CGGT, TAAC, CAAT]))
 
-* topxcombos.py	- retrieves the top X percent of scored overhang combinations
-		  specified by user input
+The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
+overhangs begin in the template sequence. 
 
-#=================#
-# Version History #
-#=================#
+**********************************************************************************
+NOTE: In the output data, The template sequence is 0-INDEXED, while many other DNA
+      software programs use 1-INDEXED notation.
+**********************************************************************************
 
-* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent
-	 of scored overhang combinations. Minor modifications to ggsoft.py
-	 in process() and main(), swapping optparse out for argparse. 
-	 Overhang scoring includes an exponential ID extension penalty for
-	 overhang pairs. Overhang combinations containing palindromic
-	 overhangs (e.g. 'GATC') are excluded. TopXCombos functionality
-	 enabled in GGSOFT command-line usage.
+The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the 
+overhang combination is 36, and the overhangs resulting from the listed indices 
+are [TTCG, GGTA, CCAC], meaning we have TTCG starting at index 202, GGTA starting 
+at index 412, and CCAC starting at index 617 in our template sequence.
 
-* v1.0 - Initial version of GGSOFT. Future work includes reducing computation 
-	 time of construction of the scoring table and implementation of 
-	 a heuristic to reduce memory usage during computation of overhang 
-	 combinations.
+===== Output from Top X Combos =====
+Output from topxcombos.py is written as such:
 
-#=============#
-# Future Work #
-#=============#
+Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
+261 of 1540 combinations selected
+((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
+((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
+...
+((194, 404, 610), (34, [TCAC, AAGA, TACT]))
 
- - More specific handling of palindromic overhangs (homodimerization). Current
-   handling of palindromic overhangs results in combinations with those
-   overhangs being excluded completely from final results. May also want to
-   explore user specification of whether to include palindromic overhangs or not.
- - Speed up scoring table construction
- - Primer generation functionality in addition to overhang finding? 
- - Use heuristics to speed up finding overhang window region combinations
- - Use information from homology to optimize overhang locations across
-   a family of related sequences
-	 
+topxcombos.py extracts the top x percent of lines from a ggsoft output file.
+
 #============#
 # Algorithms #
 #============#
@@ -162,40 +214,3 @@ ACAG, would be scored as a transition, adding 1 to the overall score of -10, pro
 a score of -9. The third pair, GA, would also be scored as a transition, adding 1 to
 the overall score of -9, producing a score of -8. The final pair, TG, would be scored
 as a transversion, adding 8 to the overall score of -8, producing a final score of 0.
-
-#============================#
-# Formatting of Output Files #
-#============================#
-
-===== Output from GGSOFT =====
-Output from ggsoft.py is written as such:
-
-((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
-((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
-...
-((204, 414, 622), (8, [CGGT, TAAC, CAAT]))
-
-The sequence in the left half of the pair, (202, 412, 617), indicates the indices where
-overhangs begin in the template sequence. 
-
-**********************************************************************************
-NOTE: In the output data, The template sequence is 0-INDEXED, while many other DNA
-      software programs use 1-INDEXED notation.
-**********************************************************************************
-
-The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of the 
-overhang combination is 36, and the overhangs resulting from the listed indices 
-are [TTCG, GGTA, CCAC], meaning we have TTCG starting at index 202, GGTA starting 
-at index 412, and CCAC starting at index 617 in our template sequence.
-
-===== Output from Top X Combos =====
-Output from topxcombos.py is written as such:
-
-Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
-261 of 1540 combinations selected
-((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
-((202, 412, 622), (36, [TTCG, GGTA, CAAT]))
-...
-((194, 404, 610), (34, [TCAC, AAGA, TACT]))
-
-topxcombos.py extracts the top x percent of lines from a ggsoft output file.
