@@ -102,10 +102,11 @@ n:	(int) the maximum fragment size in base pairs
 k:	(int) the overhang size in base pairs
 
 Optional arguments:
--p percent topxfile:
-
-percent: 	(float) the percent of combos to retain from the output file from GGSOFT
-topxfile: 	(str)	the name of the file retaining the top x percent of combos
+-p percent topxfile, --percent percent topxfile:
+	percent: 	(float) the percent of combos to retain from the output file from GGSOFT
+	topxfile: 	(str)	the name of the file retaining the top x percent of combos
+-v, --verbose
+	Make the program more verbose
 
 ===========================================
 ***To run TopXCombos from the command line:

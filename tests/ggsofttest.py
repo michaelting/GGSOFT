@@ -15,7 +15,6 @@
 
 import sys
 sys.path.append("/home/Michael/GGSOFT")
-
 import ggsoft
 from nose.tools import ok_, eq_, raises
 
