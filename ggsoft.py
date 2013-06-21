@@ -5,7 +5,7 @@
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
 # Created 28 May 2013
-# v1.1 updated 6 June 2013
+# v1.1 updated 20 June 2013
 #
 # Finds top-scoring overhangs for type IIs restriction enzyme digestion 
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
@@ -23,7 +23,7 @@
 #
 #==============================================================================
 
-import math, itertools
+import math, itertools, subprocess
 from argparse import ArgumentParser
 from Bio import Seq, SeqIO
 
@@ -407,6 +407,9 @@ def main():
     parser.add_argument("minsize", type=int, metavar="m", help="minimum fragment size in bp")
     parser.add_argument("maxsize", type=int, metavar="n", help="maximum fragment size in bp")
     parser.add_argument("OHsize", type=int, metavar="k", help="overhang size in bp")
+    parser.add_argument("-p","--percent", nargs=2, dest="topxtuple", 
+                        metavar=("percent", "topxfile"), 
+                        help="top x percent combos to retain, name of filtered output file")
 
     args = parser.parse_args()
     
@@ -415,6 +418,9 @@ def main():
     minsize = int(args.minsize)
     maxsize = int(args.maxsize)
     OHsize = int(args.OHsize)
+    
+    percent = float(args.topxtuple[0])
+    topxfile = args.topxtuple[1] 
     
     if minsize > maxsize:
         raise IOError("Invalid fragment size indices! m < n is required.")
@@ -440,9 +446,16 @@ def main():
         string_combo = str(scored_combo)
         string_combo = string_combo.replace("'","")
         # write to file
-        newfile.write("%s\n" % string_combo)
-
-    newfile.close()
-
+        newfile.write("%s\n" % string_combo)  
+    
+    # required for topxcombos handling
+    newfile.close()    
+    
+    # Handle optional argument for filtering out top X percent using topxcombos.py
+    if percent:
+        filteredfile = open(topxfile, 'w')
+        subprocess.call("python topxcombos.py" + " " + outfile + " " + topxfile + " " + str(percent), shell=True)
+        filteredfile.close()
+        
 if __name__ == "__main__":
     main()

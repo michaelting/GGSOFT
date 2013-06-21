@@ -61,7 +61,7 @@ def write_output(infile, outfile, percent, lines_to_return, total_lines):
     
     newfile = open(outfile, "w")
     
-    newfile.write("Top %d percent of combinations from %s\n" % (percent, infile))
+    newfile.write("Top %f percent of combinations from %s\n" % (percent, infile))
     newfile.write("%d of %d combinations selected\n" % (lines_to_return, total_lines))
 
     template = open(infile)

@@ -24,6 +24,54 @@ than intended. For purposes such as a one-pot reaction, too similar
 overhangs can result in Golden Gate DNA fragments annealing together
 in the wrong positions relative to one another.
 
+========================================================
+***To see more information about command-line arguments:
+========================================================
+
+$ python ggsoft.py -h
+$ python topxcombos.py -h
+
+=======================================
+***To run GGSOFT from the command line:
+=======================================
+
+$ python ggsoft.py in out m n k
+
+in:	(str) the input FASTA file of a single DNA sequence to be constructed
+out:	(str) the name of the output file you want to write results to
+m:	(int) the minimum fragment size in base pairs
+n:	(int) the maximum fragment size in base pairs
+k:	(int) the overhang size in base pairs
+
+Optional arguments:
+-p percent topxfile:
+
+percent: 	(float) the percent of combos to retain from the output file from GGSOFT
+topxfile: 	(str)	the name of the file retaining the top x percent of combos
+
+===========================================
+***To run TopXCombos from the command line:
+===========================================
+
+$ python topxcombos.py infile outfile percent
+
+infile:		(str)	the results file from a GGSOFT run
+outfile:	(str) 	the name of the output file to contain the top X percent of
+			overhang combinations from the infile
+percent:	(float) the top X percent of combinations to retrieve, e.g. 23.2
+
+#================#
+# Files Included #
+#================#
+
+* ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
+	      	  overhang size, minimum fragment length, and maximum fragment length
+
+* ggsofttest.py - nose testing framework for ggsoft.py
+
+* topxcombos.py	- retrieves the top X percent of scored overhang combinations
+		  specified by user input
+
 #=================#
 # Version History #
 #=================#
@@ -33,7 +81,8 @@ in the wrong positions relative to one another.
 	 in process() and main(), swapping optparse out for argparse. 
 	 Overhang scoring includes an exponential ID extension penalty for
 	 overhang pairs. Overhang combinations containing palindromic
-	 overhangs (e.g. 'GATC') are excluded.
+	 overhangs (e.g. 'GATC') are excluded. TopXCombos functionality
+	 enabled in GGSOFT command-line usage.
 
 * v1.0 - Initial version of GGSOFT. Future work includes reducing computation 
 	 time of construction of the scoring table and implementation of 
@@ -46,9 +95,9 @@ in the wrong positions relative to one another.
 
  - More specific handling of palindromic overhangs (homodimerization). Current
    handling of palindromic overhangs results in combinations with those
-   overhangs being excluded completely from final results.
+   overhangs being excluded completely from final results. May also want to
+   explore user specification of whether to include palindromic overhangs or not.
  - Speed up scoring table construction
- - Integrate topxcombos functionality into optional arguments for ggsoft.py
  - Primer generation functionality in addition to overhang finding? 
  - Use heuristics to speed up finding overhang window region combinations
  - Use information from homology to optimize overhang locations across
@@ -75,25 +124,50 @@ Note that for overhangs of length greater than 4bp, computation time of the scor
 table becomes exponentially large. Computation time also increases with decreasing
 fragment size (more fragments, more overhang combinations).
 
-#================#
-# Files Included #
-#================#
+#==================#
+# Overhang Scoring #
+#==================#
 
-* ggsoft.py 	- runs the GGSOFT program given an input sequence, output file name,
-	      	  overhang size, minimum fragment length, and maximum fragment length
+The base scoring value is computed linearly by pairwise comparisons of bases at the
+same indices in two different overhangs. Scores are added to the base score of 0.
+For identical repeats, an exponentially increasing score is subtracted from the 
+overall score based on the length of the identical section. Overhang combinations
+with the highest score are considered the best candidates for usage in DNA assembly.
 
-* ggsofttest.py - nose testing framework for ggsoft.py
+Pairwise comparisons score bases on transversions, transitions, and identicals.
 
-* topxcombos.py	- retrieves the top X percent of scored overhang combinations
-		  specified by user input
+Transversion: 	8
+Transition:	1
+Identical:	-10
+
+Identical base penalty: 3^(L-1)
+L = length of identical base regions between overhangs
+
+The biological basis for this scoring scheme (relative to one another) is that we
+want to avoid identical bases at identical positions in overhangs. Having two separate
+overhangs with identical bases would make the overhangs inspecific, which can result
+in DNA fragments annealing to the wrong locations during assembly. Both transitions
+and transversions are scored higher than identicals because overhangs with differing
+bases at the same positions are less likely to anneal in the wrong location (which
+we are specifying). Transversions are score higher than transitions because similar
+bases can still potentially anneal even if there is a mismatch. Pyrimidines, C and T,
+and purings, A and G, have 3 and 2 hydrogen bonds, respectively, and are similar in 
+chemical structure such that the overhangs AGTT and TTAA may still anneal even though
+the GT is not a Watson-Crick base pair.
+
+Take for example two overhangs ATGT and ACAG. The first pair, corresponding to the 
+A in ATGT and the first A in ACAG, would be scored as an identical pair, producing
+a score of -10. The second pair, corresponding to the first T in ATGT and the C in
+ACAG, would be scored as a transition, adding 1 to the overall score of -10, producing
+a score of -9. The third pair, GA, would also be scored as a transition, adding 1 to
+the overall score of -9, producing a score of -8. The final pair, TG, would be scored
+as a transversion, adding 8 to the overall score of -8, producing a final score of 0.
 
 #============================#
 # Formatting of Output Files #
 #============================#
 
-==============================
 ===== Output from GGSOFT =====
-==============================
 Output from ggsoft.py is written as such:
 
 ((202, 412, 617), (36, [TTCG, GGTA, CCAC]))
@@ -114,9 +188,7 @@ overhang combination is 36, and the overhangs resulting from the listed indices
 are [TTCG, GGTA, CCAC], meaning we have TTCG starting at index 202, GGTA starting 
 at index 412, and CCAC starting at index 617 in our template sequence.
 
-====================================
 ===== Output from Top X Combos =====
-====================================
 Output from topxcombos.py is written as such:
 
 Top 17 percent of combinations from ./tests/testggsoft_P42212.txt
