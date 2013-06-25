@@ -1,13 +1,18 @@
 #!/usr/bin/python
 
-#=============================================================================
-# Top X Combos
-# Retrieves the top X percent of scored overhang combinations from an output
-#   file from GGSOFT.
-#
-# Copyright 2013 Michael Ting
-# https://github.com/michaelting
-#=============================================================================
+"""
+#=============================================================================#
+# GGSOFT: Top X Combos                                                        #
+# Retrieves the top X percent of scored overhang combinations from an output  #
+#   file from GGSOFT.                                                         #
+#                                                                             #
+# Copyright 2013 Michael Ting                                                 #
+# https://github.com/michaelting                                              #
+#                                                                             #
+# Released under the BSD 2-clause license. See LICENSE.                       #
+# http://opensource.org/licenses/BSD-2-Clause                                 #
+#=============================================================================#
+"""
 
 from argparse import ArgumentParser
 

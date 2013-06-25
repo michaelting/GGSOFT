@@ -1,11 +1,16 @@
 #!/usr/bin/python
 
+"""
 #==============================================================================
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
+# Created 28 May 2013
+# v1.1.2 updated 25 June 2013
+#
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
-# Created 28 May 2013
-# v1.1 updated 20 June 2013
+#
+# Released under the BSD 2-clause license. See LICENSE.
+# http://opensource.org/licenses/BSD-2-Clause
 #
 # Finds top-scoring overhangs for type IIs restriction enzyme digestion 
 #   of a user-specified fragment size. Overhangs are scored by maximal distance
@@ -21,8 +26,8 @@
 #   - For small fragment sizes, computation of overhang window regions may
 #     use up memory and cause the program to fail. Further optimization 
 #     may utilize heuristics to reduce memory usage.
-#
 #==============================================================================
+"""
 
 import math, itertools, subprocess
 from argparse import ArgumentParser

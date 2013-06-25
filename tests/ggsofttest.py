@@ -1,17 +1,22 @@
 #!/usr/bin/python
 
-#==============================================================================
-# Unit testing file for ggsoft.py using the nose framework
-# Copyright 2013 Michael Ting
-# https://github.com/michaelting
-#
-# Tests can be run using "$ nosetests ggsofttest.py"
-# 
-# Options:
-#   -v          : verbose, displays test names
-#   -x          : stop the test at the first failure
-#   --nocapture : prevent nose from capturing stdout output
-#==============================================================================
+"""
+#=============================================================================#
+# Unit testing file for ggsoft.py using the nose framework                    #
+# Copyright 2013 Michael Ting                                                 #
+# https://github.com/michaelting                                              #
+#                                                                             #
+# Released under the BSD 2-clause license. See LICENSE.                       #
+# http://opensource.org/licenses/BSD-2-Clause                                 #
+#                                                                             #
+# Tests can be run using "$ nosetests ggsofttest.py"                          #
+#                                                                             #
+# Options:                                                                    #
+#   -v          : verbose, displays test names                                #
+#   -x          : stop the test at the first failure                          #
+#   --nocapture : prevent nose from capturing stdout output                   #
+#=============================================================================#
+"""
 
 import sys
 sys.path.append("/home/Michael/GGSOFT")

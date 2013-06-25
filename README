@@ -29,6 +29,9 @@ in the wrong positions relative to one another.
 # Version History #
 #=================#
 
+* v1.1.2	- Added __init__.py file to specify GGSOFT package, updated documentation
+		  with more specific licensing information.
+
 * v1.1.1 	- MemoryError handling instructions for users. Added documentation
 		  for MemoryErrors under Software Usage in README. Added more test
 		  output examples.
@@ -105,9 +108,12 @@ results produced by GGSOFT.
 
 argparse:	Included in the Python standard library for Python >= 2.7 and >= 3.2
 		For earlier versions, argparse is provided as a separate package.
-		More information can be found at https://pypi.python.org/pypi/argparse
+		More information can be found at https://pypi.python.org/pypi/argparse.
 
-Biopython:	Package can be found at biopython.org
+Biopython:	Version 1.61. Package can be found at biopython.org.
+
+nose:		Python testing framework. Version 1.3.0. More information can be found at
+		https://pypi.python.org/pypi/nose/1.3.0.
 
 ========================================================
 ***To see more information about command-line arguments:
