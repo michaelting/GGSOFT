@@ -2,7 +2,7 @@
 #=======================================================================#
 # GGSOFT/README								#
 # Copyright (c) 2013 Michael Ting					#
-# See LICENSE								#
+# Released under the BSD 2-clause license. See LICENSE file.		#
 # https://github.com/michaelting					#
 #									#
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool #
@@ -29,20 +29,24 @@ in the wrong positions relative to one another.
 # Version History #
 #=================#
 
-* v1.1 - Added topxcombos.py, allowing for retrieval of the top x percent
-	 of scored overhang combinations. TopXCombos functionality enabled
-	 in GGSOFT command-line usage. ggsoft.process now uses Bio.SeqIO to
-	 parse FASTA files. Swapped optparse out for argparse in ggsoft.main.
-	 Overhang scoring includes an exponential ID extension penalty for
-	 overhang pairs. Overhang combinations containing palindromic
-	 overhangs (e.g. 'GATC') are excluded from final results in
-	 ggsoft.find_combos using Bio.Seq. Added option for more verbose
-	 information when running GGSOFT.
+* v1.1.1 	- MemoryError handling instructions for users. Added documentation
+		  for MemoryErrors under Software Usage in README. Added more test
+		  output examples.
 
-* v1.0 - Initial version of GGSOFT. Future work includes reducing computation 
-	 time of construction of the scoring table and implementation of 
-	 a heuristic to reduce memory usage during computation of overhang 
-	 combinations.
+* v1.1 		- Added topxcombos.py, allowing for retrieval of the top x percent
+	  	  of scored overhang combinations. TopXCombos functionality enabled
+	 	  in GGSOFT command-line usage. ggsoft.process now uses Bio.SeqIO to
+	 	  parse FASTA files. Swapped optparse out for argparse in ggsoft.main.
+	 	  Overhang scoring includes an exponential ID extension penalty for
+	 	  overhang pairs. Overhang combinations containing palindromic
+	 	  overhangs (e.g. 'GATC') are excluded from final results in
+	 	  ggsoft.find_combos using Bio.Seq. Added option for more verbose
+	 	  information when running GGSOFT.
+
+* v1.0 		- Initial version of GGSOFT. Future work includes reducing computation 
+	 	  time of construction of the scoring table and implementation of 
+	 	  a heuristic to reduce memory usage during computation of overhang 
+	 	  combinations.
 
 #================#
 # Files Included #
@@ -62,7 +66,13 @@ in the wrong positions relative to one another.
    handling of palindromic overhangs results in combinations with those
    overhangs being excluded completely from final results. May also want to
    explore user specification of whether to include palindromic overhangs or not.
- - Speed up scoring table construction
+ - Speed up scoring table construction - this may be done by constructing smaller tables
+   first and splitting up larger overhangs into smaller problems. Log speedup?
+ - Optimize the scoring function. Current scoring values were chosen arbitrarily on
+   an absolute scale, but attempt to represent the relative values of each type of
+   feature in overhangs.
+ - Change scoring function to account for number of overhangs, allowing for
+   combination comparisons across different numbers of overhangs.
  - Primer generation functionality in addition to overhang finding? 
  - Use heuristics to speed up finding overhang window region combinations
  - Use information from homology to optimize overhang locations across
@@ -71,6 +81,23 @@ in the wrong positions relative to one another.
 #================#
 # Software Usage #
 #================#
+
+Because memory usage follows O(4^2n), where n is the length of the overhang, overhangs of size 
+greater than 4 can result in MemoryErrors when creating the overhang scoring table. MemoryErrors 
+can also occur when choosing too small of a fragment size or too wide a range of fragment length
+ranges due to the exponentially increasing number of overhang combinations to explore.
+
+Fortunately, Type IIS enzyme overhangs rarely exceed 4bp and scoring table construction is
+generally feasible. As for the choice of fragment size and ranges, if MemoryErrors are encountered,
+one should increase the fragment size and/or decrease the range between the minimum and maximum
+fragment sizes. For example, choosing a range of 180 to 220 may result in a MemoryError. To alleviate
+this, one could reduce the range to 190 to 210 to see a speedup in calculations. However, choosing
+too thin of a fragment size range may result in suboptimal overhang combinations. Results should
+be inspected to ensure that overhangs predicted are suitable to one's needs.
+
+Current scoring values are arbitrary but are designed to provide relative resolution between
+overhang combinations. Further biological tests are needed to evaluate the optimality of
+results produced by GGSOFT.
 
 #===================#
 # External Packages #

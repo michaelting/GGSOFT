@@ -439,7 +439,10 @@ def main():
         print "Finding overhang combinations..."
     
     # Find all valid overhang combinations
-    combos = find_combos(seq, OHsize, minsize, maxsize)
+    try:
+        combos = find_combos(seq, OHsize, minsize, maxsize)
+    except MemoryError:
+        raise MemoryError("Out of memory! Try larger fragment sizes and/or smaller size ranges.")
     
     # Compute index-->overhang dictionary for fast access
     subdict = getsubstrings(seq, OHsize)
