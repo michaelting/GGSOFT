@@ -4,7 +4,7 @@
 #==============================================================================
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
 # Created 28 May 2013
-# v1.1.2 updated 25 June 2013
+# v1.1.3 updated 8 July 2013
 #
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting

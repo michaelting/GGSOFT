@@ -176,7 +176,7 @@ def test_scoretable_size4():
     TV = 8      # transversion
     TS = 1      # transition
     ID = -10    # identical
-    # ID penalties accumulate as the sum of powers
+    # ID penalties accumulate as the sum of powers of the base penalty
     P2 = -3         # penalty for length 2 identical string
     P3 = -3-9       # penalty for length 3 identical string
     P4 = -3-9-27    # penalty for length 4 identical string
@@ -381,22 +381,88 @@ def test_scorecalc_4():
     Sum = 9+13+12 = 34
     """
     
+    TV = 8      # transversion
+    TS = 1      # transition
+    ID = -10    # identical
+    # ID penalties accumulate as the sum of powers of the base penalty
+    P2 = -3         # penalty for length 2 identical string
+    P3 = -3-9       # penalty for length 3 identical string
+    P4 = -3-9-27    # penalty for length 4 identical string
+    
     size = 4
     size4table = ggsoft.buildtable(size)    
     
-    OHlist1 = ['AGAT','GTCT','TACG']    
-    #testscore1 = 34
-    testscore1 = 46
+    OHlist1 = ['AGAT','GTCT','TACG']
+    
+    # AGAT-GTCT
+    score1a = TS+TV+TV+ID # 7
+    # AGAT-TACG
+    score1b = TV+TS+TV+TV # 25
+    # GTCT-TACG
+    score1c = TV+TV+ID+TV # 14
+    # testscore1 = 46
+    testscore1 = score1a + score1b + score1c
+    
     newscore1 = ggsoft.calc_score(OHlist1,size4table)
     
     eq_(newscore1, testscore1, msg="size 4 score calculation 1 failed!")
     
     OHlist2 = ['AAAA','GATC','GGAT']
-    #testscore2 = 21
-    testscore2 = 7
+    
+    # AAAA-GATC
+    score2a = TS+ID+TV+TV # 7
+    # AAAA-GGAT
+    score2b = TS+TS+ID+TV # 0
+    # GATC-GGAT
+    score2c = ID+TS+TV+TS # 0
+    # testscore2 = 7
+    testscore2 = score2a + score2b + score2c
+    
     newscore2 = ggsoft.calc_score(OHlist2,size4table)
     
     eq_(newscore2, testscore2, msg="size 4 score calculation 2 failed!")
+    
+    OHlist3 = ['AGTC', 'AGAT','GTGT','TAGC']
+    
+    # AGTC-AGAT
+    score3a = ID+ID+TV+TS+P2 # -14
+    # AGTC-GTGT
+    score3b = TS+TV+TV+TS # 18
+    # AGTC-TAGC
+    score3c = TV+TS+TV+ID # 7
+    # AGAT-GTGT
+    score3d = TS+TV+TS+ID # 0
+    # AGAT-TAGC
+    score3e = TV+TS+TS+TS # 11
+    # GTGT-TAGC
+    score3f = TV+TV+ID+TS # 7
+    # testscore3 = 29
+    testscore3 = score3a + score3b + score3c + score3d + score3e + score3f
+    
+    newscore3 = ggsoft.calc_score(OHlist3,size4table)
+    
+    eq_(newscore3, testscore3, msg="size 4 score calculation 3 failed!")
+    
+    OHlist4 = ['AAAT','AAGT','CAGT','AAAT']
+    
+    # AAAT-AAGT
+    score4a = ID+ID+TS+ID+P2 # -32
+    # AAAT-CAGT
+    score4b = TV+ID+TS+ID # -11
+    # AAAT-AAAT
+    score4c = ID+ID+ID+ID+P4 # -79
+    # AAGT-CAGT
+    score4d = TV+ID+ID+ID+P3 # -34
+    # AAGT-AAAT
+    score4e = ID+ID+TS+ID+P2 # -32
+    # CAGT-AAAT
+    score4f = TV+ID+TS+ID # -11
+    # testscore4 = -199
+    testscore4 = score4a + score4b + score4c + score4d + score4e + score4f
+    
+    newscore4 = ggsoft.calc_score(OHlist4, size4table)
+    
+    eq_(newscore4, testscore4, msg="size 4 score calculation 4 failed!")
 
 def test_scorecalc_6():
     """
@@ -408,16 +474,22 @@ def test_scorecalc_6():
     TV = 8      # transversion
     TS = 1      # transition
     ID = -10    # identical    
+    # ID penalties accumulate as the sum of powers of the base penalty
+    P2 = -3         # penalty for length 2 identical string
+    P3 = -3-9       # penalty for length 3 identical string
+    P4 = -3-9-27    # penalty for length 4 identical string
+    P5 = -3-9-27-81     # penalty for length 5 identical string
     
+    print "building table..."
     size = 6
     size6table = ggsoft.buildtable(size)
+    print "table build finished..."
     
     # AAAAAA-TTTTTT: TV*6 = 24
     # AAAAAA-GGGGGG: TS*6 = 6
     # TTTTTT-GGGGGG: TV*6 = 24
     # total score = 54
     OHlist1 = ['AAAAAA','TTTTTT','GGGGGG']
-    #testscore1 = 54
     testscore1 = TV*6 + TS*6 + TV*6
     newscore1 = ggsoft.calc_score(OHlist1,size6table)
     
@@ -431,8 +503,37 @@ def test_scorecalc_6():
     # ACACAC-TCTAGT: TV+ID+TV+TV+TS+TS = 0+2+12 = 14
     # total score = 91
     OHlist2 = ['AAAAAA','TTTTTT','ACACAC','TCTAGT']
-    #testscore2 = 91
     testscore2 = TV*6 + (ID*3+TV*3) + (ID+TS+TV*4) + (TS*3+TV*3) + (ID*3+TS+TV*2) + (ID+TS*2+TV*3)
     newscore2 = ggsoft.calc_score(OHlist2,size6table)
     
     eq_(newscore2, testscore2, msg="size 6 score calculation 2 failed!")
+    
+    OHlist3 = ['AAAAAA','AAAAAT','AAAATT']
+    
+    # AAAAAA-AAAAAT
+    score3a = ID*5+TV+P5 # -162
+    # AAAAAA-AAAATT
+    score3b = ID*4+TV*2+P4 # -63
+    # AAAAAT-AAAATT
+    score3c = ID*4+TV+ID+P4 # -81
+    # testscore3 = -306
+    testscore3 = score3a + score3b + score3c
+    
+    newscore3 = ggsoft.calc_score(OHlist3,size6table)
+    
+    eq_(newscore3, testscore3, msg="size 6 score calculation 3 failed!")
+    
+    OHlist4 = ['AATTAA','AAGGAA', 'AATGAA']
+    
+    # AATTAA-AAGGAA
+    score4a = ID*2+TV*2+ID*2+P2*2 # -30
+    # AATTAA-AATGAA
+    score4b = ID*3+TV+ID*2+P3+P2 # -57
+    # AAGGAA-AATGAA
+    score4c = ID*2+TV+ID*3+P2+P3 # -57
+    # testscore4 = -144
+    testscore4 = score4a + score4b + score4c
+    
+    newscore4 = ggsoft.calc_score(OHlist4, size6table)
+    
+    eq_(newscore4, testscore4, msg="size 6 score calculation 4 failed!")
