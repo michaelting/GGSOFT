@@ -67,6 +67,8 @@ in the wrong positions relative to one another.
 # Future Work #
 #=============#
 
+ - Eliminate dependency on Biopython for FASTA parsing
+ - Functionality for user-inputted overhang exclusion lists
  - More specific handling of palindromic overhangs (homodimerization). Current
    handling of palindromic overhangs results in combinations with those
    overhangs being excluded completely from final results. May also want to
@@ -104,9 +106,9 @@ Current scoring values are arbitrary but are designed to provide relative resolu
 overhang combinations. Further biological tests are needed to evaluate the optimality of
 results produced by GGSOFT.
 
-#===================#
-# External Packages #
-#===================#
+#============================#
+# Required External Packages #
+#============================#
 
 argparse:	Included in the Python standard library for Python >= 2.7 and >= 3.2
 		For earlier versions, argparse is provided as a separate package.
