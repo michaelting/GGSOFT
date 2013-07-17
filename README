@@ -1,6 +1,6 @@
 
 #=======================================================================#
-# GGSOFT/README	v1.1.3							#
+# GGSOFT/README	v1.2							#
 # Copyright (c) 2013 Michael Ting					#
 # Released under the BSD 2-clause license. See LICENSE file.		#
 # https://github.com/michaelting					#
@@ -28,6 +28,13 @@ in the wrong positions relative to one another.
 #=================#
 # Version History #
 #=================#
+
+* v1.2		- Removed dependency on Biopython for FASTA parsing and reverse
+		  complement in find_combos. Included reverse complement function
+		  rev_comp and modified function process. Testing for output yielded
+		  equality for P42212dna.fasta with bounds of 195 and 205 with
+		  overhang size 3. Additional testing needed for ValueErrors in
+		  FASTA file input/output.
 
 * v1.1.3	- More rigorous test cases for the overhang scoring function.
 
@@ -67,7 +74,6 @@ in the wrong positions relative to one another.
 # Future Work #
 #=============#
 
- - Eliminate dependency on Biopython for FASTA parsing
  - Functionality for user-inputted overhang exclusion lists
  - More specific handling of palindromic overhangs (homodimerization). Current
    handling of palindromic overhangs results in combinations with those
@@ -113,8 +119,6 @@ results produced by GGSOFT.
 argparse:	Included in the Python standard library for Python >= 2.7 and >= 3.2
 		For earlier versions, argparse is provided as a separate package.
 		More information can be found at https://pypi.python.org/pypi/argparse.
-
-Biopython:	Version 1.61. Package can be found at biopython.org.
 
 nose:		Python testing framework. Version 1.3.0. More information can be found at
 		https://pypi.python.org/pypi/nose/1.3.0.

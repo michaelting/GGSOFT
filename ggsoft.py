@@ -4,7 +4,7 @@
 #==============================================================================
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
 # Created 28 May 2013
-# v1.1.3 updated 8 July 2013
+# v1.2 updated 17 July 2013
 #
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
@@ -31,11 +31,11 @@
 
 import math, itertools, subprocess
 from argparse import ArgumentParser
-from Bio import Seq, SeqIO
 
+"""
 # Uses the Biopython package SeqIO to extract information from a FASTA file --
 def process(infile):
-    """
+    
     Extracts sequences from a FASTA file using the Biopython package
     SeqIO.
     
@@ -50,7 +50,7 @@ def process(infile):
         - In the future, we may want to incorporate homology as information to
           find the best locations across a family of gene sequences. This may
           require parsing a FASTA file with multiple sequences.
-    """
+    
     try:
         record  = SeqIO.read(infile, "fasta")
         seq     = str(record.seq)
@@ -58,6 +58,47 @@ def process(infile):
         raise ValueError("Invalid file format! Please use a FASTA file with one sequence.")
     
     return seq
+
+"""
+
+# Extract information from a FASTA file --------------------------------------
+def process(infile):
+    """
+    Utilizes itertools to parse FASTA file formats, eliminating dependency on
+    BioPython for FASTA parsing.
+    
+    Input:
+        infile  - An open FASTA file with a single nucleotide sequence.
+    Output:
+        seq     - A string corresponding to the nucleotide sequence
+                  in the file.
+    Note:
+        - For the purposes of this program, we want to restrict the number of
+          sequences in the input file to ONE (1) sequence. 
+        - In the future, we may want to incorporate homology as information to
+          find the best locations across a family of gene sequences. This may
+          require parsing a FASTA file with multiple sequences.
+    """    
+    
+    #fh = open(infile)
+    faiter = (x[1] for x in itertools.groupby(infile, lambda line: line[0] == ">"))
+    i = 0
+    seqlist = []
+    if faiter == None:
+        raise ValueError("No sequences found in file faiter.")
+    
+    for header in faiter:
+        seq = "".join(s.strip() for s in faiter.next())
+        i += 1
+        # restrict number of sequences to just 1
+        if i > 1:
+            raise ValueError("Please restrict FASTA files to one sequence only.")
+        else:
+            seqlist.append(seq)
+    if i == 0:
+        raise ValueError("No sequences found in file.")            
+    
+    return seqlist[0]
 
 # Construct the scoring table ------------------------------------------------
 def buildtable(size):
@@ -271,7 +312,8 @@ def find_combos(sequen, OHsize, minsize, maxsize):
         # exclude combos with palindromic overhangs
         for OHindex in combo:
             overhang = sequen[OHindex:OHindex+OHsize]
-            rc = Seq.reverse_complement(overhang)
+            #rc = Seq.reverse_complement(overhang)
+            rc = rev_comp(overhang)
             # if any overhang is palindromic (self-dimers), don't use the combo
             if overhang == rc:
                 keep = False
@@ -282,6 +324,33 @@ def find_combos(sequen, OHsize, minsize, maxsize):
     # return groups of valid indices for overhangs
     return checked
 
+# Calculate reverse complement -----------------------------------------------
+def rev_comp(seq):
+    """
+    Calculates the reverse complement of a single nucleotide sequence
+    Input:
+        seq     - (String) nucleotide sequence of the input
+    Output:
+        rcomp   - (String) The reverse complement of the input seq
+    """
+    # DNA complementary base pairs
+    base_dict = {'A':'T',
+                 'a':'t',
+                 'T':'A',
+                 't':'a',
+                 'G':'C',
+                 'g':'c',
+                 'C':'G',
+                 'c':'g'}
+    
+    rev_seq = seq[::-1]
+    
+    rcomp = ""
+    for base in rev_seq:
+        rcomp = rcomp + base_dict.get(base)
+    
+    return rcomp
+    
 # Checks that regions are within a valid distance from each other ------------
 # Alternatively, checks that fragment sizes are within user specifications
 def _valid_distance(OHindex1, OHindex2, mindist, maxdist):
