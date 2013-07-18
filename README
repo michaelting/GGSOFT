@@ -1,6 +1,6 @@
 
 #=======================================================================#
-# GGSOFT/README	v1.2							#
+# GGSOFT/README	v1.3							#
 # Copyright (c) 2013 Michael Ting					#
 # Released under the BSD 2-clause license. See LICENSE file.		#
 # https://github.com/michaelting					#
@@ -28,6 +28,9 @@ in the wrong positions relative to one another.
 #=================#
 # Version History #
 #=================#
+
+* v1.3		- Added functionality for overhang exclusion lists from results.
+		  Testing still needed for FASTA file input/output.
 
 * v1.2		- Removed dependency on Biopython for FASTA parsing and reverse
 		  complement in find_combos. Included reverse complement function
@@ -74,7 +77,6 @@ in the wrong positions relative to one another.
 # Future Work #
 #=============#
 
- - Functionality for user-inputted overhang exclusion lists
  - More specific handling of palindromic overhangs (homodimerization). Current
    handling of palindromic overhangs results in combinations with those
    overhangs being excluded completely from final results. May also want to
@@ -87,7 +89,8 @@ in the wrong positions relative to one another.
  - Change scoring function to account for number of overhangs, allowing for
    combination comparisons across different numbers of overhangs.
  - Primer generation functionality in addition to overhang finding? 
- - Use heuristics to speed up finding overhang window region combinations
+ - Use heuristics to speed up finding overhang window region combinations.
+   Could also implement parallelization using multiple threads for overhang scoring.
  - Use information from homology to optimize overhang locations across
    a family of related sequences
 	 
@@ -150,6 +153,9 @@ n:	(int) the maximum fragment size in base pairs
 k:	(int) the overhang size in base pairs
 
 Optional arguments:
+-e exfile, --exclude exfile:
+	exfile:		(str)	the name of the file with overhangs to be excluded from scoring
+				combinations
 -p percent topxfile, --percent percent topxfile:
 	percent: 	(float) the percent of combos to retain from the output file from GGSOFT
 	topxfile: 	(str)	the name of the file retaining the top x percent of combos
@@ -166,6 +172,22 @@ infile:		(str)	the results file from a GGSOFT run
 outfile:	(str) 	the name of the output file to contain the top X percent of
 			overhang combinations from the infile
 percent:	(float) the top X percent of combinations to retrieve, e.g. 23.2
+
+#===========================#
+# Formatting of Input Files #
+#===========================#
+
+===== Input Sequence =====
+Input sequence files should contain a single DNA string in FASTA format.
+
+===== Exclusion List File =====
+Exclusion lists should be formatted with overhangs to be excluded on separate lines in
+the exclusion list file. For example, if we wanted to exclude 'AATG','CATT', and 'CGAT'
+from scored overhang combinations, we would format the exclusion list file as so:
+
+AATG
+CATT
+CGAT
 
 #============================#
 # Formatting of Output Files #
@@ -191,6 +213,9 @@ The right half, (36, [TTCG, GGTA, CCAC]), indicates that the overall score of th
 overhang combination is 36, and the overhangs resulting from the listed indices 
 are [TTCG, GGTA, CCAC], meaning we have TTCG starting at index 202, GGTA starting 
 at index 412, and CCAC starting at index 617 in our template sequence.
+
+Using an exclusion list file will list the number of overhang combinations excluded
+from the total number of overhang combinations examined.
 
 ===== Output from Top X Combos =====
 Output from topxcombos.py is written as such:

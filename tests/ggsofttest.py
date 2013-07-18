@@ -351,6 +351,46 @@ def test_combofinder():
     correct = [(3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (5, 8, 14), (5, 9, 14), (5, 11, 14)]
 
     eq_(validcombos, correct, msg="combofinder test failed!")
+    
+def test_combofinder2():
+    """
+    test_combofinder2
+    
+    Checks that exclusion lists are read and used correctly
+    """
+
+    seq1 = "AAAATTTTGGGGCCCCAAAA"
+    OHsize1 = 4
+    minsize1 = 2
+    maxsize1 = 6
+    exclst1 = ['ATTT']
+    validcombos1 = ggsoft.find_combos(seq1, OHsize1, minsize1, maxsize1, exclst1)
+    
+    correct1 = [(4, 8, 14), (4, 9, 14), (5, 8, 14), (5, 9, 14), (5, 11, 14)]    
+    
+    eq_(validcombos1, correct1, msg="combofinder exclusion test 1 failed!")
+    
+    seq2 = "AAAATTTTGGGGCCCCAAAA"
+    OHsize2 = 4
+    minsize2 = 2
+    maxsize2 = 6
+    exclst2 = ['','']
+    validcombos2 = ggsoft.find_combos(seq2, OHsize2, minsize2, maxsize2, exclst2)
+    
+    correct2 = [(3, 8, 14), (3, 9, 14), (4, 8, 14), (4, 9, 14), (5, 8, 14), (5, 9, 14), (5, 11, 14)]
+    
+    eq_(validcombos2, correct2, msg="combofinder exclusion test 2 failed!")
+    
+    seq3 = "AAAATTTTGGGGCCCCAAAA"
+    OHsize3 = 4
+    minsize3 = 2
+    maxsize3 = 6
+    exclst3 = ['ATTT','GGGC']
+    validcombos3 = ggsoft.find_combos(seq3, OHsize3, minsize3, maxsize3, exclst3)
+    
+    correct3 = [(4, 8, 14), (5, 8, 14), (5, 11, 14)]    
+    
+    eq_(validcombos3, correct3, msg="combofinder exclusion test 1 failed!")
 
 def test_revcomp():
     """

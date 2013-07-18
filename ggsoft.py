@@ -4,7 +4,7 @@
 #==============================================================================
 # GGSOFT: Golden Gate DNA Assembly Size-specified Overhang Finding Tool
 # Created 28 May 2013
-# v1.2 updated 17 July 2013
+# v1.3 updated 18 July 2013
 #
 # Copyright 2013 Michael Ting
 # https://github.com/michaelting
@@ -276,7 +276,7 @@ def find_regions(seq, OHsize, minsize, maxsize):
     return regionlist
 
 # find all valid overhang combinations ---------------------------------------
-def find_combos(sequen, OHsize, minsize, maxsize):
+def find_combos(sequen, OHsize, minsize, maxsize, exclst=None):
     """
     Use sequence indices to pull overhang substrings from substrs and produce
     a list of lists of valid overhang combinations
@@ -298,6 +298,7 @@ def find_combos(sequen, OHsize, minsize, maxsize):
     combolist = list(itertools.product(*regionlist))
 
     checked = []    # holds valid overhang combinations
+    exclcount = 0   # count number of overhang combinations excluded
     # [[0,1],[4,5],[8,9]] becomes
     # [[0,4,8],[0,4,9],[0,5,8],[0,5,9],[1,4,8],[1,4,9],[1,5,8],[1,5,9]]
     for combo in combolist:
@@ -318,9 +319,18 @@ def find_combos(sequen, OHsize, minsize, maxsize):
             if overhang == rc:
                 keep = False
                 break
+            # if overhang is found in user-specified exclusion list
+            if exclst:
+                if overhang in exclst:
+                    keep = False
+                    exclcount += 1
+                    break
         if keep:
             checked.append(combo)
-        
+    
+    if exclst:
+        print "%d out of %d overhang combinations excluded" % (exclcount, len(combolist))
+    
     # return groups of valid indices for overhangs
     return checked
 
@@ -482,6 +492,8 @@ def main():
     parser.add_argument("minsize", type=int, metavar="m", help="minimum fragment size in bp")
     parser.add_argument("maxsize", type=int, metavar="n", help="maximum fragment size in bp")
     parser.add_argument("OHsize", type=int, metavar="k", help="overhang size in bp")
+    parser.add_argument("-e","--exclude", dest="exclude", metavar="exfile",
+                        help="overhang exclusion list, see README for details")
     parser.add_argument("-p","--percent", nargs=2, dest="topxtuple", 
                         metavar=("percent", "topxfile"), 
                         help="top x percent combos to retain, name of filtered output file")
@@ -509,12 +521,26 @@ def main():
     seq = process(template)    
     template.close()
     
-    if args.verbose:
-        print "Finding overhang combinations..."
-    
     # Find all valid overhang combinations
     try:
-        combos = find_combos(seq, OHsize, minsize, maxsize)
+        # Use exclusion list for overhang scoring
+        if args.exclude:
+            if args.verbose:
+                print "Reading exclusion list..."
+            fread = args.exclude
+            exfile = open(fread)
+            exclst = []
+            for line in exfile:
+                excOH = line.strip().upper()
+                exclst.append(excOH)
+            if args.verbose:
+                print "Finding overhang combinations..."
+            combos = find_combos(seq, OHsize, minsize, maxsize, exclst)
+        # No exclusion list specified
+        else:
+            if args.verbose:
+                print "Finding overhang combinations..."
+            combos = find_combos(seq, OHsize, minsize, maxsize)
     except MemoryError:
         raise MemoryError("Out of memory! Try larger fragment sizes and/or smaller size ranges.")
     
@@ -546,9 +572,12 @@ def main():
         topxfile = args.topxtuple[1]
 
         if args.verbose:
-            print "Filtering top " + str(percent) + " percent of combinations to " + topxfile        
+            print "Filtering top " + str(percent) + " percent of combinations to " + topxfile + "..."       
         
         subprocess.call("python topxcombos.py" + " " + outfile + " " + topxfile + " " + str(percent), shell=True)
+    
+    if args.verbose:
+        print "Calculation complete."
         
 if __name__ == "__main__":
     main()
